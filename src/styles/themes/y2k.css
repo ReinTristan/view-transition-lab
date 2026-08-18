@@ -1,0 +1,62 @@
+/* Y2K futurism — chrome and silver, hard metallic gradients, blob shapes.
+ *
+ * STUB. Minimum viable palette; the real design goes in its own individual
+ * plan. Context and obstacles in docs/tasks.md.
+ */
+[data-theme="y2k"] {
+  --theme-font-sans: "Orbitron Variable", sans-serif;
+  --theme-font-heading: "Orbitron Variable", sans-serif;
+
+  --background: oklch(0.92 0.012 270);
+  --foreground: oklch(0.24 0.03 285);
+  --card: oklch(0.97 0.008 270);
+  --card-foreground: oklch(0.24 0.03 285);
+  --popover: oklch(0.97 0.008 270);
+  --popover-foreground: oklch(0.24 0.03 285);
+  --primary: oklch(0.7 0.14 285);
+  --primary-foreground: oklch(0.98 0.005 270);
+  --secondary: oklch(0.86 0.03 265);
+  --secondary-foreground: oklch(0.3 0.04 285);
+  --muted: oklch(0.89 0.015 270);
+  --muted-foreground: oklch(0.5 0.03 280);
+  --accent: oklch(0.82 0.09 320);
+  --accent-foreground: oklch(0.28 0.06 310);
+  --destructive: oklch(0.62 0.22 15);
+  --border: oklch(0.78 0.02 270);
+  --input: oklch(0.95 0.01 270);
+  --ring: oklch(0.7 0.14 285);
+
+  --chart-1: oklch(0.7 0.14 285);
+  --chart-2: oklch(0.82 0.09 320);
+  --chart-3: oklch(0.76 0.11 230);
+  --chart-4: oklch(0.86 0.06 190);
+  --chart-5: oklch(0.58 0.1 300);
+
+  --sidebar: oklch(0.9 0.014 270);
+  --sidebar-foreground: oklch(0.24 0.03 285);
+  --sidebar-primary: oklch(0.7 0.14 285);
+  --sidebar-primary-foreground: oklch(0.98 0.005 270);
+  --sidebar-accent: oklch(0.82 0.09 320);
+  --sidebar-accent-foreground: oklch(0.28 0.06 310);
+  --sidebar-border: oklch(0.78 0.02 270);
+  --sidebar-ring: oklch(0.7 0.14 285);
+
+  --radius: 1.75rem;
+
+  --surface-bg: linear-gradient(
+    145deg,
+    oklch(0.97 0.008 270) 0%,
+    oklch(0.84 0.02 265) 30%,
+    oklch(0.95 0.01 275) 55%,
+    oklch(0.8 0.025 260) 100%
+  );
+  --surface-blur: 0px;
+  --surface-border-w: 1px;
+  --surface-shadow: 0 4px 14px -6px oklch(0.35 0.04 285 / 0.5);
+  /* TODO: the hard chrome metallic gradient goes here. */
+  --surface-gloss: none;
+  --glow: none;
+
+  --overlay-bg: oklch(0.3 0.03 285 / 0.25);
+  --overlay-blur: 4px;
+}

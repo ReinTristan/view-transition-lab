@@ -1,0 +1,91 @@
+/* Theme-change wipes.
+ *
+ * Two modes share the same browser mechanism:
+ *
+ *   native  — the animation lives here, in CSS, on the pseudo-element.
+ *   bridge  — the animation is driven by a JS library (Motion, GSAP, anime.js)
+ *             writing --vt-progress on :root. Pseudo-elements are not DOM
+ *             nodes, so none of those libraries can touch them directly; the
+ *             bridge is the custom property, which does inherit down to them.
+ */
+
+/* Registered so it is interpolable and so calc() treats it as a number rather
+   than an opaque token. */
+@property --vt-progress {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+:root {
+  /* Click origin. Written by the runtime before starting the transition. */
+  --vt-x: 50%;
+  --vt-y: 50%;
+  /* Distance to the farthest corner from the origin, computed in JS. */
+  --vt-radius: 100vmax;
+  --vt-duration: 600ms;
+  --vt-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The old snapshot sits still underneath while the new one uncovers it. */
+::view-transition-old(root) {
+  z-index: 0;
+  mix-blend-mode: normal;
+  animation: none;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+  mix-blend-mode: normal;
+  animation: none;
+}
+
+/* --- Native mode: the animation is declarative ----------------------------- */
+
+[data-vt-mode="native"]::view-transition-new(root) {
+  animation: vt-reveal var(--vt-duration) var(--vt-ease) forwards;
+}
+
+@keyframes vt-reveal {
+  from {
+    clip-path: circle(0 at var(--vt-x) var(--vt-y));
+  }
+  to {
+    clip-path: circle(var(--vt-radius) at var(--vt-x) var(--vt-y));
+  }
+}
+
+/* --- Bridge mode: the animation is driven by JS ---------------------------- */
+
+[data-vt-mode="bridge"]::view-transition-new(root) {
+  /* The clip-path recomputes itself every time the JS engine writes
+     --vt-progress; there are no keyframes interpolating it. */
+  clip-path: circle(
+    calc(var(--vt-progress) * var(--vt-radius)) at var(--vt-x) var(--vt-y)
+  );
+  /* Keepalive. Without an active animation on the pseudo-element, the browser
+     considers the transition finished as soon as it is ready and the wipe is
+     never seen. This one animates nothing: it just holds the transition open
+     for as long as the JS engine needs. */
+  animation: vt-keepalive var(--vt-duration) linear forwards;
+}
+
+@keyframes vt-keepalive {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Accessibility --------------------------------------------------------- */
+
+/* The engines already skip startViewTransition under reduced-motion; this is
+   the safety net in case a transition slips through anyway. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    clip-path: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,73 @@
+/* Cyberpunk — dark BY DESIGN, neon, glow.
+ *
+ * Its darkness does not depend on the system preference: data-scheme="dark" is
+ * set by the theme registry, so it looks the same with the OS in light or dark.
+ *
+ * STUB. Minimum viable palette; the real design goes in its own individual
+ * plan. Context and obstacles in docs/tasks.md.
+ */
+[data-theme="cyberpunk"] {
+  --theme-font-sans: "JetBrains Mono Variable", ui-monospace, monospace;
+  --theme-font-heading: "JetBrains Mono Variable", ui-monospace, monospace;
+  --theme-font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --background: oklch(0.15 0.03 285);
+  --foreground: oklch(0.93 0.03 190);
+  --card: oklch(0.19 0.04 285);
+  --card-foreground: oklch(0.93 0.03 190);
+  --popover: oklch(0.19 0.04 285);
+  --popover-foreground: oklch(0.93 0.03 190);
+  --primary: oklch(0.82 0.18 190);
+  --primary-foreground: oklch(0.15 0.03 285);
+  --secondary: oklch(0.28 0.06 290);
+  --secondary-foreground: oklch(0.93 0.03 190);
+  --muted: oklch(0.24 0.04 288);
+  --muted-foreground: oklch(0.68 0.06 210);
+  --accent: oklch(0.7 0.24 330);
+  --accent-foreground: oklch(0.15 0.03 285);
+  --destructive: oklch(0.68 0.25 15);
+  --border: oklch(0.35 0.08 200 / 0.55);
+  --input: oklch(0.25 0.05 288);
+  --ring: oklch(0.82 0.18 190);
+
+  --chart-1: oklch(0.82 0.18 190);
+  --chart-2: oklch(0.7 0.24 330);
+  --chart-3: oklch(0.85 0.19 105);
+  --chart-4: oklch(0.66 0.2 275);
+  --chart-5: oklch(0.75 0.2 35);
+
+  --sidebar: oklch(0.17 0.035 285);
+  --sidebar-foreground: oklch(0.93 0.03 190);
+  --sidebar-primary: oklch(0.82 0.18 190);
+  --sidebar-primary-foreground: oklch(0.15 0.03 285);
+  --sidebar-accent: oklch(0.7 0.24 330);
+  --sidebar-accent-foreground: oklch(0.15 0.03 285);
+  --sidebar-border: oklch(0.35 0.08 200 / 0.55);
+  --sidebar-ring: oklch(0.82 0.18 190);
+
+  --radius: 0.25rem;
+
+  --surface-bg:
+    radial-gradient(
+      120% 90% at 15% 0%,
+      oklch(0.26 0.09 300 / 0.7) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      110% 80% at 90% 100%,
+      oklch(0.28 0.1 200 / 0.6) 0%,
+      transparent 55%
+    ),
+    oklch(0.15 0.03 285);
+  --surface-blur: 0px;
+  --surface-border-w: 1px;
+  --surface-shadow:
+    0 0 0 1px oklch(0.82 0.18 190 / 0.15),
+    0 4px 24px -8px oklch(0.82 0.18 190 / 0.25);
+  --surface-gloss: none;
+  /* TODO: applying the neon halo to text and borders goes in its own plan. */
+  --glow: 0 0 12px oklch(0.82 0.18 190 / 0.6);
+
+  --overlay-bg: oklch(0.1 0.04 285 / 0.6);
+  --overlay-blur: 3px;
+}

@@ -1,0 +1,112 @@
+/* Neobrutalism — thick black border, hard offset shadow, radius 0.
+ *
+ * It uses color, but the style is defined by geometry, not hue: the triad
+ * (acid yellow / electric cyan / magenta) sits on off-white and pure black.
+ * The "hard" reference theme of phase 0: the one that stresses the token
+ * system the most, because it collapses radius to zero and replaces the
+ * diffuse shadow with a solid one.
+ */
+[data-theme="neobrutalism"] {
+  --theme-font-sans: "Archivo Variable", sans-serif;
+  --theme-font-heading: "Archivo Variable", sans-serif;
+
+  --background: oklch(0.96 0.018 95);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.88 0.18 95);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.82 0.14 205);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.93 0.012 95);
+  --muted-foreground: oklch(0.34 0 0);
+  --accent: oklch(0.82 0.14 205);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.62 0.26 350);
+  --border: oklch(0 0 0);
+  --input: oklch(1 0 0);
+  --ring: oklch(0 0 0);
+
+  --chart-1: oklch(0.88 0.18 95);
+  --chart-2: oklch(0.82 0.14 205);
+  --chart-3: oklch(0.62 0.26 350);
+  --chart-4: oklch(0 0 0);
+  --chart-5: oklch(0.7 0.19 145);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0.88 0.18 95);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(0.82 0.14 205);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0 0 0);
+  --sidebar-ring: oklch(0 0 0);
+
+  --radius: 0rem;
+
+  /* Surface contract */
+  --surface-bg: oklch(0.96 0.018 95);
+  --surface-blur: 0px;
+  --surface-border-w: 3px;
+  --surface-shadow: 5px 5px 0 0 oklch(0 0 0);
+  --surface-gloss: none;
+  --glow: none;
+
+  --overlay-bg: oklch(0 0 0 / 0.35);
+  --overlay-blur: 0px;
+}
+
+/* Controls are hard boxes too, not just the floating surfaces. */
+[data-theme="neobrutalism"]
+:is(
+  [data-slot="button"],
+  [data-slot="input"],
+  [data-slot="textarea"],
+  [data-slot="select-trigger"],
+  [data-slot="native-select"],
+  [data-slot="checkbox"],
+  [data-slot="badge"],
+  [data-slot="toggle"],
+  [data-slot="tabs-list"],
+  [data-slot="alert"]
+) {
+  border: var(--surface-border-w) solid var(--border);
+}
+
+[data-theme="neobrutalism"]
+  :is([data-slot="button"], [data-slot="badge"], [data-slot="checkbox"]) {
+  box-shadow: 3px 3px 0 0 var(--border);
+}
+
+/* The shift on press is the signature gesture of the style: the button travels
+   toward its shadow instead of sinking with a 1px translate. */
+[data-theme="neobrutalism"] [data-slot="button"]:active {
+  box-shadow: 0 0 0 0 var(--border);
+  transform: translate(3px, 3px);
+}
+
+/* Nothing rounded survives: these slots ship hardcoded rounded-full, which does
+   not respond to --radius. */
+[data-theme="neobrutalism"]
+:is(
+  [data-slot="avatar"],
+  [data-slot="avatar-image"],
+  [data-slot="avatar-fallback"],
+  [data-slot="avatar-badge"],
+  [data-slot="switch"],
+  [data-slot="switch-thumb"],
+  [data-slot="slider-track"],
+  [data-slot="slider-range"],
+  [data-slot="slider-thumb"],
+  [data-slot="radio-group-item"],
+  [data-slot="radio-group-indicator"],
+  [data-slot="progress"],
+  [data-slot="progress-track"],
+  [data-slot="progress-indicator"],
+  [data-slot="scroll-area-thumb"],
+  [data-slot="spinner"]
+) {
+  border-radius: 0;
+}

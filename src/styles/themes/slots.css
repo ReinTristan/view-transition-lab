@@ -1,0 +1,76 @@
+/* [data-slot] overrides: what the color tokens cannot reach.
+ *
+ * base-nova components expose data-slot on all their roots (some emit it at
+ * runtime via Base UI's useRender), so almost all theming happens from here
+ * without editing their code.
+ */
+
+/* --- Surface contract -------------------------------------------------------
+ *
+ * base-nova does not use border on its floating surfaces: it uses `ring-1
+ * ring-foreground/10`, which paints OUTSIDE the border-box. A theme that only
+ * thickened the border would end up with a 1px halo around it.
+ *
+ * Declaring box-shadow here replaces the entire shadow chain Tailwind composes
+ * — the ring included — and the surface comes under the theme's control. Every
+ * theme must define --surface-border-w and --surface-shadow.
+ */
+[data-theme]
+:is(
+  [data-slot="card"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="context-menu-content"],
+  [data-slot="menubar-content"],
+  [data-slot="hover-card-content"],
+  [data-slot="combobox-content"],
+  [data-slot="sheet-content"],
+  [data-slot="drawer-popup"],
+  [data-slot="command"],
+  [data-slot="chart-tooltip"]
+) {
+  border-color: var(--border);
+  border-style: solid;
+  border-width: var(--surface-border-w);
+  box-shadow: var(--surface-shadow);
+}
+
+/* --- Radius: undo the cap on the small sizes -------------------------------
+ *
+ * button/toggle/select at xs and sm use rounded-[min(var(--radius-md),10px)].
+ * That min() follows the token only up to 10-12px, so a high-radius theme would
+ * silently lose it on precisely the most numerous controls.
+ */
+[data-theme]
+:is(
+  [data-slot="button"],
+  [data-slot="toggle"],
+  [data-slot="select-trigger"],
+  [data-slot="native-select"]
+) {
+  border-radius: var(--radius-lg);
+}
+
+/* --- Literal colors that ignore the theme --------------------------------- */
+
+/* The four overlays ship hardcoded bg-black/10: fixed black regardless of the
+   theme. The backdrop-blur-xs they already include is a small fixed radius. */
+[data-theme]
+:is(
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"],
+  [data-slot="sheet-overlay"],
+  [data-slot="drawer-overlay"]
+) {
+  background-color: var(--overlay-bg, oklch(0 0 0 / 0.1));
+  backdrop-filter: blur(var(--overlay-blur, 2px));
+}
+
+/* slider.tsx paints the thumb with a literal bg-white, no dark variant. */
+[data-theme] [data-slot="slider-thumb"] {
+  background-color: var(--card);
+}

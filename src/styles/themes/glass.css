@@ -1,0 +1,80 @@
+/* Glassmorphism — the most restrained of the three translucent themes: real
+ * backdrop-filter, 1px borders, neutral background, no gloss and no metallic
+ * gradients. The only one of the seven that could ship as-is today.
+ *
+ * STUB. Minimum viable palette; the real design goes in its own individual
+ * plan. Context and obstacles in docs/tasks.md.
+ */
+[data-theme="glass"] {
+  --theme-font-sans: "Manrope Variable", sans-serif;
+  --theme-font-heading: "Manrope Variable", sans-serif;
+
+  --background: oklch(0.94 0.008 250);
+  --foreground: oklch(0.24 0.015 260);
+  --card: oklch(1 0 0 / 0.55);
+  --card-foreground: oklch(0.24 0.015 260);
+  --popover: oklch(1 0 0 / 0.75);
+  --popover-foreground: oklch(0.24 0.015 260);
+  --primary: oklch(0.5 0.07 255);
+  --primary-foreground: oklch(0.98 0.004 250);
+  --secondary: oklch(1 0 0 / 0.5);
+  --secondary-foreground: oklch(0.3 0.02 258);
+  --muted: oklch(1 0 0 / 0.35);
+  --muted-foreground: oklch(0.5 0.02 258);
+  --accent: oklch(0.86 0.05 250 / 0.6);
+  --accent-foreground: oklch(0.3 0.03 255);
+  --destructive: oklch(0.6 0.19 22);
+  --border: oklch(1 0 0 / 0.55);
+  --input: oklch(1 0 0 / 0.45);
+  --ring: oklch(0.5 0.07 255 / 0.6);
+
+  --chart-1: oklch(0.62 0.11 255);
+  --chart-2: oklch(0.7 0.1 215);
+  --chart-3: oklch(0.66 0.1 290);
+  --chart-4: oklch(0.75 0.09 180);
+  --chart-5: oklch(0.56 0.09 320);
+
+  --sidebar: oklch(1 0 0 / 0.45);
+  --sidebar-foreground: oklch(0.24 0.015 260);
+  --sidebar-primary: oklch(0.5 0.07 255);
+  --sidebar-primary-foreground: oklch(0.98 0.004 250);
+  --sidebar-accent: oklch(0.86 0.05 250 / 0.6);
+  --sidebar-accent-foreground: oklch(0.3 0.03 255);
+  --sidebar-border: oklch(1 0 0 / 0.55);
+  --sidebar-ring: oklch(0.5 0.07 255 / 0.6);
+
+  --radius: 1rem;
+
+  --surface-bg: linear-gradient(
+    135deg,
+    oklch(0.88 0.06 265) 0%,
+    oklch(0.92 0.04 220) 40%,
+    oklch(0.9 0.05 320) 100%
+  );
+  --surface-blur: 16px;
+  --surface-border-w: 1px;
+  --surface-shadow: 0 8px 32px -12px oklch(0.3 0.03 260 / 0.35);
+  --surface-gloss: none;
+  --glow: none;
+
+  --overlay-bg: oklch(0.5 0.02 260 / 0.15);
+  /* The backdrop-blur-xs the overlays ship with is a small fixed radius; this
+     is precisely the theme that needs to raise it. */
+  --overlay-blur: 12px;
+}
+
+/* The actual glass: surfaces blur whatever sits behind them. */
+[data-theme="glass"]
+:is(
+  [data-slot="card"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="sheet-content"],
+  [data-slot="drawer-popup"],
+  [data-slot="command"]
+) {
+  backdrop-filter: blur(var(--surface-blur)) saturate(1.6);
+}

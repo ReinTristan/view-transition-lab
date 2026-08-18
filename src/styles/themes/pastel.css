@@ -1,0 +1,59 @@
+/* Pastel soft — light, lavender/pink/mint tones, high radius, soft shapes.
+ * The "light" reference theme of phase 0.
+ */
+[data-theme="pastel"] {
+  --theme-font-sans: "Quicksand Variable", sans-serif;
+  --theme-font-heading: "Quicksand Variable", sans-serif;
+
+  --background: oklch(0.985 0.012 320);
+  --foreground: oklch(0.38 0.05 300);
+  --card: oklch(1 0.006 320);
+  --card-foreground: oklch(0.38 0.05 300);
+  --popover: oklch(1 0.006 320);
+  --popover-foreground: oklch(0.38 0.05 300);
+  --primary: oklch(0.8 0.11 310);
+  --primary-foreground: oklch(0.28 0.06 310);
+  --secondary: oklch(0.93 0.05 350);
+  --secondary-foreground: oklch(0.42 0.08 350);
+  --muted: oklch(0.955 0.022 320);
+  --muted-foreground: oklch(0.6 0.04 310);
+  --accent: oklch(0.91 0.07 185);
+  --accent-foreground: oklch(0.38 0.06 195);
+  --destructive: oklch(0.72 0.14 20);
+  --border: oklch(0.91 0.03 320);
+  --input: oklch(0.94 0.025 320);
+  --ring: oklch(0.8 0.11 310);
+
+  --chart-1: oklch(0.8 0.11 310);
+  --chart-2: oklch(0.85 0.09 350);
+  --chart-3: oklch(0.88 0.08 190);
+  --chart-4: oklch(0.9 0.09 100);
+  --chart-5: oklch(0.83 0.09 40);
+
+  --sidebar: oklch(0.97 0.018 320);
+  --sidebar-foreground: oklch(0.38 0.05 300);
+  --sidebar-primary: oklch(0.8 0.11 310);
+  --sidebar-primary-foreground: oklch(0.28 0.06 310);
+  --sidebar-accent: oklch(0.93 0.05 350);
+  --sidebar-accent-foreground: oklch(0.42 0.08 350);
+  --sidebar-border: oklch(0.91 0.03 320);
+  --sidebar-ring: oklch(0.8 0.11 310);
+
+  --radius: 1.5rem;
+
+  /* Surface contract */
+  --surface-bg: linear-gradient(
+    160deg,
+    oklch(0.985 0.012 320) 0%,
+    oklch(0.96 0.03 350) 50%,
+    oklch(0.965 0.03 200) 100%
+  );
+  --surface-blur: 0px;
+  --surface-border-w: 1px;
+  --surface-shadow: 0 8px 24px -14px oklch(0.55 0.1 310 / 0.55);
+  --surface-gloss: none;
+  --glow: none;
+
+  --overlay-bg: oklch(0.6 0.08 310 / 0.18);
+  --overlay-blur: 4px;
+}
