@@ -100,7 +100,10 @@
         "useNamespaceKeyword": "error"
       },
       "nursery": {
-        "useSortedClasses": "info"
+        "useSortedClasses": {
+          "level": "info",
+          "fix": "safe"
+        }
       }
     },
     "includes": ["**", "**/dist", "**/.eslintrc.cjs"]
