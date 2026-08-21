@@ -29,14 +29,21 @@ export function useSpeed() {
 /**
  * Returns a click handler that switches the theme using the active engine's
  * wipe, taking the click point as the origin.
+ *
+ * `mutate` is handed straight to runTransition, so whatever it does happens in
+ * the same DOM mutation as the theme swap.
  */
 export function useThemeSwitcher() {
   return useCallback(
-    (id: ThemeId, event?: { clientX: number; clientY: number }) => {
+    (
+      id: ThemeId,
+      event?: { clientX: number; clientY: number },
+      mutate?: () => void
+    ) => {
       const origin = event
         ? { x: event.clientX, y: event.clientY }
         : { x: window.innerWidth / 2, y: window.innerHeight / 2 }
-      return runTransition(id, origin)
+      return runTransition(id, origin, mutate)
     },
     []
   )

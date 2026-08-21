@@ -77,20 +77,33 @@ function loaderFor(id: EngineId) {
  */
 let running = false
 
+/**
+ * `mutate` runs inside the very same DOM mutation as the theme swap, which is
+ * what lets a route change ride along with the wipe instead of landing after
+ * it. Anything left to React's batching would commit after the browser already
+ * captured the "new" snapshot, and would pop in rather than being wiped in.
+ */
 export async function runTransition(
   theme: ThemeId,
-  origin: { x: number; y: number }
+  origin: { x: number; y: number },
+  mutate?: () => void
 ) {
   if (running) return
   running = true
 
   try {
     const engine = await loaderFor(getEngine())()
-    await engine.run(() => applyTheme(theme), {
-      origin,
-      duration: getDuration(),
-      reducedMotion: prefersReducedMotion(),
-    })
+    await engine.run(
+      () => {
+        applyTheme(theme)
+        mutate?.()
+      },
+      {
+        origin,
+        duration: getDuration(),
+        reducedMotion: prefersReducedMotion(),
+      }
+    )
   } finally {
     running = false
   }
