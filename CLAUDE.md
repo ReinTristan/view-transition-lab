@@ -177,8 +177,25 @@ task — each has its own obstacles against the base system.
 ## Local-only files
 
 `docs/` (`workflow.md`, `tasks.md`) holds the user's working notes and is **not committed** —
-it is excluded via `.git/info/exclude`. Treat it as the richest context available, but never
-assume it exists for anyone else, and don't reference it from committed files.
+it is excluded via `.git/info/exclude`. It is the richest context available, but never assume
+it exists for anyone else, and don't reference it from committed files.
+
+**The start point**: at the start of any session, read `docs/` to get the context of the
+current or next task, which may include touching a theme, an engine, a mode, or the design
+direction of the lab.
+
+- `docs/workflow.md` — project-wide context: the three axes, why the common interface exists,
+  what the PoC is trying to prove. Read it whole before writing any individual theme or
+  engine plan.
+- `docs/tasks.md` — the per-theme breakdown: current status table (which themes are done vs.
+  stubs), each theme's design direction, and **the specific obstacles that theme faces against
+  the base system**. This is the input to the individual plan.
+
+This file describes decisions that are already made and stable; `docs/` describes what is
+still in motion. When they disagree about current state, `docs/` wins — and say so.
+
+Skip the read only for work that is genuinely unrelated (tooling, build config, a README
+edit). If `docs/` is missing, just proceed — it means someone else cloned the repo.
 
 ## Known issues
 
