@@ -23,23 +23,33 @@ brings its own style.
 
 The current ones were implemented first to test the contrast of opposites designs. The rest are more sibling themes thats why are implemented later.
 
-**Engines** — who runs the wipe animation:
+**Modes** — how the wipe is produced. This is the axis the engines are compared on, and the
+same engine can implement more than one:
+
+| mode | mechanism |
+|---|---|
+| `native` | Declarative CSS animation on `::view-transition-new(root)`. No library involved. |
+| `bridge` | The browser takes the snapshots; a JS library drives the progress by writing `--vt-progress` on `:root`. |
+| `overlay` | No View Transitions API at all: a real element animated by the library, with the theme swap happening midway through. |
+
+**Engines** — who runs the animation:
 
 ***Current***
 
-| engine | mode | mechanism |
+| engine | modes | notes |
 |---|---|---|
-| Native | `native` | Declarative CSS animation on `::view-transition-new(root)`. |
-| Motion | `bridge` | The browser takes the snapshots; engine drives the progress.|
+| Native | `native` | Native with without libraries. |
+| Motion | `bridge` | The reference implementation of the bridge. |
 
 Engines are loaded lazily, so the bundle weight the lab measures is real.
 
 ***Upcoming***
-| engine | mode | mechanism |
+
+| engine | modes | notes |
 |---|---|---|
-| GSAP | `bridge` | The browser takes the snapshots; engine drives the progress. |
-| Anime.js | `bridge` | The browser takes the snapshots; engine drives the progress. |
-| Tailwind| `native` | Declarative through tailwind (varies between plugins) |
+| GSAP | `bridge`, `overlay` | Flip **is** the overlay philosophy — it is where that mode pays off most. |
+| Anime.js | `bridge`, `overlay` | The one picked to show the overlay mode in its rawest form. |
+| Tailwind | `native` | Declarative through Tailwind; varies between plugins. |
 
 
 ## Methodology
@@ -54,6 +64,9 @@ Engines are loaded lazily, so the bundle weight the lab measures is real.
 - **The `bridge` mode.** `::view-transition-*` pseudo-elements are not DOM nodes, so JS
   libraries have nothing to grab. The bridge is a custom property: the library animates a
   scalar, writes it to `--vt-progress`, and the pseudo-element's `clip-path` consumes it.
+- **The `overlay` mode is the control.** It is the same interaction without the View Transitions
+  API, instead a real element is animated. Having it side by side makes a good point for comparing the cost
+  and the benefit of the API visible rather than assume.
 
 ## Stack
 
