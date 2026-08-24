@@ -54,7 +54,7 @@ export function ThemePicker({ className }: { className?: string }) {
             ))}
           </span>
           {theme.label}
-          {!theme.ready && (
+          {theme.status === 'pending' && (
             <span className='text-[0.65rem] text-muted-foreground'>wip</span>
           )}
         </Button>

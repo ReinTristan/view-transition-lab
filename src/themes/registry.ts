@@ -17,6 +17,16 @@ export type ThemeId =
  */
 export type ThemeScheme = 'light' | 'dark'
 
+/**
+ * How far the theme's design has actually got.
+ *
+ * pending    — minimum viable palette. Usable, not broken, but undesigned.
+ * partial — has its own design and drove the base system's fixes, but checking
+ *           it in the browser still turns up things missing.
+ * done    — nothing pending. No theme is here yet.
+ */
+export type ThemeStatus = 'pending' | 'partial' | 'done'
+
 export interface ThemeMeta {
   id: ThemeId
   label: string
@@ -25,8 +35,7 @@ export interface ThemeMeta {
   font: string
   /** 3-color sample for the picker. */
   swatch: [string, string, string]
-  /** false while the theme is still a stub with a provisional palette. */
-  ready: boolean
+  status: ThemeStatus
 }
 
 export const themes: Record<ThemeId, ThemeMeta> = {
@@ -41,7 +50,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.93 0.05 350)',
       'oklch(0.91 0.07 185)',
     ],
-    ready: true,
+    status: 'partial',
   },
   anthropic: {
     id: 'anthropic',
@@ -54,7 +63,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.92 0.04 60)',
       'oklch(0.26 0.02 55)',
     ],
-    ready: false,
+    status: 'pending',
   },
   frutiger: {
     id: 'frutiger',
@@ -67,7 +76,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.85 0.13 165)',
       'oklch(0.9 0.11 195)',
     ],
-    ready: false,
+    status: 'pending',
   },
   y2k: {
     id: 'y2k',
@@ -80,7 +89,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.82 0.09 320)',
       'oklch(0.84 0.02 265)',
     ],
-    ready: false,
+    status: 'pending',
   },
   cyberpunk: {
     id: 'cyberpunk',
@@ -93,7 +102,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.7 0.24 330)',
       'oklch(0.15 0.03 285)',
     ],
-    ready: false,
+    status: 'pending',
   },
   glass: {
     id: 'glass',
@@ -106,7 +115,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.86 0.05 250)',
       'oklch(0.92 0.04 220)',
     ],
-    ready: false,
+    status: 'pending',
   },
   neobrutalism: {
     id: 'neobrutalism',
@@ -119,7 +128,7 @@ export const themes: Record<ThemeId, ThemeMeta> = {
       'oklch(0.82 0.14 205)',
       'oklch(0.62 0.26 350)',
     ],
-    ready: true,
+    status: 'partial',
   },
 }
 

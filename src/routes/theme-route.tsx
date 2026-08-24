@@ -33,10 +33,10 @@ export function ThemeRoute() {
       <header className='space-y-3'>
         <div className='flex items-center gap-2'>
           <h1 className='font-heading font-semibold text-2xl'>{theme.label}</h1>
-          {theme.ready ? (
-            <Badge variant='secondary'>reference</Badge>
-          ) : (
+          {theme.status === 'pending' ? (
             <Badge variant='outline'>provisional palette</Badge>
+          ) : (
+            <Badge variant='secondary'>{theme.status}</Badge>
           )}
         </div>
         <p className='max-w-2xl text-muted-foreground text-sm'>{theme.blurb}</p>

@@ -3,7 +3,7 @@
  * Its darkness does not depend on the system preference: data-scheme="dark" is
  * set by the theme registry, so it looks the same with the OS in light or dark.
  *
- * STUB. Minimum viable palette; the real design goes in its own individual
+ * PENDING. Minimum viable palette; the real design goes in its own individual
  * plan. Context and obstacles in docs/tasks.md.
  */
 [data-theme="cyberpunk"] {

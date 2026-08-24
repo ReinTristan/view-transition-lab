@@ -32,8 +32,9 @@ implementations can be compared honestly. Three orthogonal axes:
 - **Mode** (3) — `native` (declarative CSS on the pseudo-element), `bridge` (the browser takes
   the snapshots, a JS library drives the progress), `overlay` (no VT API at all).
 
-Currently implemented: 7 themes (2 fully designed — `pastel` and `neobrutalism` — 5 are stubs
-with a minimum viable palette), and 2 engines (`native`, `motion`).
+Currently implemented: 7 themes (2 partially designed — `pastel` and `neobrutalism`, the
+furthest along but **not** finished — 5 are pendings with a minimum viable palette), and 2 engines
+(`native`, `motion`).
 
 ## Architecture: the load-bearing decisions
 
@@ -188,7 +189,7 @@ direction of the lab.
   what the PoC is trying to prove. Read it whole before writing any individual theme or
   engine plan.
 - `docs/tasks.md` — the per-theme breakdown: current status table (which themes are done vs.
-  stubs), each theme's design direction, and **the specific obstacles that theme faces against
+  pendings), each theme's design direction, and **the specific obstacles that theme faces against
   the base system**. This is the input to the individual plan.
 
 This file describes decisions that are already made and stable; `docs/` describes what is

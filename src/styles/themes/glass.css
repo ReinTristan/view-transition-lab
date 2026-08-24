@@ -2,7 +2,7 @@
  * backdrop-filter, 1px borders, neutral background, no gloss and no metallic
  * gradients. The only one of the seven that could ship as-is today.
  *
- * STUB. Minimum viable palette; the real design goes in its own individual
+ * PENDING. Minimum viable palette; the real design goes in its own individual
  * plan. Context and obstacles in docs/tasks.md.
  */
 [data-theme="glass"] {

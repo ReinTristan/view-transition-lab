@@ -8,7 +8,7 @@ export function HubRoute() {
   const engineId = useEngineId()
   const theme = themes[themeId]
   const engine = engineList.find((item) => item.id === engineId)
-  const ready = themeList.filter((item) => item.ready).length
+  const done = themeList.filter((item) => item.status === 'done').length
 
   return (
     <div className='space-y-10 pt-6'>
@@ -37,7 +37,7 @@ export function HubRoute() {
           <div>
             <dt className='text-muted-foreground'>Finished themes</dt>
             <dd className='font-medium'>
-              {ready} of {themeList.length}
+              {done} of {themeList.length}
             </dd>
           </div>
         </dl>
