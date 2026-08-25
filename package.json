@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "lint": "pnpm biome check --write",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -56,7 +56,6 @@
     "@vitejs/plugin-react": "^6.0.4",
     "@vtbag/inspection-chamber": "^1.0.24",
     "babel-plugin-react-compiler": "^1.0.0",
-    "oxlint": "^1.75.0",
     "typescript": "7.0.2",
     "vite": "^8.2.0"
   }
