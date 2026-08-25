@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { Showcase } from '@/components/showcase/showcase'
 import { themeList, themes } from '@/themes/registry'
+import { getHubTheme, getTheme } from '@/themes/store'
 import { useEngineId, useThemeId } from '@/themes/use-theme'
-import { engineList } from '@/transitions'
+import { engineList, runTransition } from '@/transitions'
 
 export function HubRoute() {
   const themeId = useThemeId()
@@ -9,6 +11,21 @@ export function HubRoute() {
   const theme = themes[themeId]
   const engine = engineList.find((item) => item.id === engineId)
   const done = themeList.filter((item) => item.status === 'done').length
+
+  // The hub restores the theme you last swapped to here, so leaving to a theme
+  // page and coming back does not lose it. Centered origin, same as landing on
+  // /theme/:id: there is no click point to take it from.
+  //
+  // Mount only on purpose. getHubTheme() changes on every swap, so depending on
+  // it would make the write re-trigger the restore in a loop.
+  useEffect(() => {
+    const pinned = getHubTheme()
+    if (!pinned || getTheme() === pinned) return
+    void runTransition(pinned, {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    })
+  }, [])
 
   return (
     <div className='space-y-10 pt-6'>
@@ -19,7 +36,10 @@ export function HubRoute() {
         <p className='max-w-2xl text-muted-foreground text-sm'>
           Three orthogonal axes: the theme, the engine running the animation and
           the mechanism that engine uses. The showcase below is the same on
-          every route, so any difference you see comes from the theme.
+          every route, so any difference you see comes from the theme. The
+          second panel up there swaps the theme in place; the bar goes to each
+          theme's own route instead, and coming back here restores the one you
+          left.
         </p>
         <dl className='flex flex-wrap gap-x-8 gap-y-2 text-xs'>
           <div>

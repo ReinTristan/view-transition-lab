@@ -5,6 +5,7 @@ import { DEFAULT_THEME, isThemeId, themes } from './registry'
 const KEY_THEME = 'vtd:theme'
 const KEY_ENGINE = 'vtd:engine'
 const KEY_SPEED = 'vtd:speed'
+const KEY_HUB_THEME = 'vtd:hub-theme'
 
 /** Base wipe duration, before applying the multiplier. */
 export const BASE_DURATION = 600
@@ -96,6 +97,29 @@ export function setSpeed(value: number) {
 /** Effective duration in ms, already scaled by the speed multiplier. */
 export function getDuration(): number {
   return Math.round(BASE_DURATION / speed)
+}
+
+/* --- Hub marker ----------------------------------------------------------- */
+
+/**
+ * The theme `/` returns to. This is NOT a second copy of the active theme —
+ * that one lives in the DOM and nowhere else. It answers a different question:
+ * "which theme should the hub restore to?". It is never read to render an
+ * active state, only once when the hub mounts, so it cannot desync from the
+ * live theme the way a mirrored copy would.
+ *
+ * Validated on read: a stale id in localStorage falls back to "no marker"
+ * rather than forcing a theme that no longer exists.
+ */
+export function getHubTheme(): ThemeId | null {
+  const stored = read(KEY_HUB_THEME)
+  return isThemeId(stored) ? stored : null
+}
+
+/** No emit(): nothing renders from the marker, so it stays out of the store's
+ *  subscription surface. */
+export function setHubTheme(id: ThemeId) {
+  write(KEY_HUB_THEME, id)
 }
 
 /* --- Accessibility -------------------------------------------------------- */

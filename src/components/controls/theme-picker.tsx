@@ -1,14 +1,20 @@
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router'
+import { ThemeSwatch } from '@/components/controls/theme-swatch'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { themeList } from '@/themes/registry'
 import { useThemeId, useThemeSwitcher } from '@/themes/use-theme'
 
 /**
- * The only theme control, and the app's navigation at the same time: a click
- * swaps the theme and moves to /theme/:id. Keeping both jobs here is what stops
- * the "active theme" from being tracked in two places that can disagree.
+ * The navigation, which happens to also be a theme control: a click swaps the
+ * theme and moves to /theme/:id. It is the heavier of the two theme controls on
+ * purpose — visual weight is what tells "go to this theme's page" apart from
+ * ThemeSwapper's "just repaint what I'm looking at".
+ *
+ * Both controls read the active theme from the DOM via useThemeId, so they
+ * cannot disagree with each other. The older desync came from marking active by
+ * route on one side and by DOM on the other.
  *
  * The wipe origin comes from the exact click point, which is why the handler
  * receives the event and not just the theme id.
@@ -41,18 +47,7 @@ export function ThemePicker({ className }: { className?: string }) {
             })
           }
         >
-          <span
-            aria-hidden
-            className='flex shrink-0 overflow-hidden rounded-full ring-1 ring-foreground/20'
-          >
-            {theme.swatch.map((color) => (
-              <span
-                key={color}
-                className='size-2'
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </span>
+          <ThemeSwatch theme={theme} />
           {theme.label}
           {theme.status === 'pending' && (
             <span className='text-[0.65rem] text-muted-foreground'>wip</span>
