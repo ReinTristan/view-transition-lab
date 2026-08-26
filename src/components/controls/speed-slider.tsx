@@ -12,13 +12,27 @@ export function SpeedSlider() {
   const duration = Math.round(BASE_DURATION / speed)
 
   return (
-    <div className='flex items-center gap-2'>
+    // flex-1 is scoped to md: the header is a column below that breakpoint, so
+    // there it would grow along the vertical axis and do nothing for the width.
+    <div className='flex items-center gap-2 md:flex-1'>
       <Label htmlFor='speed' className='text-muted-foreground text-xs'>
         Speed
       </Label>
       <Slider
         id='speed'
-        className='w-28'
+        // A definite width, not the percentage the Slider ships with. Stacked
+        // on a phone this box is shrink-to-fit, and a percentage width
+        // contributes nothing to a parent sized by its content: the track has
+        // no intrinsic width, so the control collapses to the size-3 thumb.
+        // 40 matches the engine select, so both controls line up in the stack.
+        //
+        // The data-horizontal prefix is load-bearing, not decoration. The
+        // variant compiles to :where(), which carries no specificity, so a bare
+        // w-* ties with the w-full slider.tsx sets and the winner is decided by
+        // stylesheet order — where w-full happens to come later. Matching the
+        // prefix is what lets tailwind-merge recognise the two as the same
+        // class and drop the one underneath, instead of leaving both to race.
+        className='data-horizontal:w-40 md:data-horizontal:w-25'
         min={0.25}
         max={2}
         step={0.25}
@@ -27,7 +41,7 @@ export function SpeedSlider() {
           setSpeed(Array.isArray(value) ? value[0] : value)
         }}
       />
-      <span className='w-20 shrink-0 font-mono text-muted-foreground text-xs tabular-nums'>
+      <span className='shrink-0 font-mono text-muted-foreground text-xs tabular-nums'>
         {speed}× · {duration}ms
       </span>
     </div>

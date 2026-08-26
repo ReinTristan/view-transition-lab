@@ -37,7 +37,7 @@ export function ThemeSwapper({ className }: { className?: string }) {
         <span className='font-heading text-muted-foreground text-xs'>
           swap only
         </span>
-        <Separator orientation='vertical' className='h-5' />
+        <Separator orientation='vertical' />
         <div className='flex flex-wrap gap-1'>
           {themeList.map((theme) => (
             <Button
