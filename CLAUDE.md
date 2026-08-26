@@ -158,7 +158,7 @@ and conversation with the user are in Spanish.
 
 **`src/components/ui/` is shadcn-generated and deliberately NOT reformatted**, to keep diffs
 clean. Format only what you write. Almost all theming happens from CSS instead of editing
-those files — only three have been touched, and each for a specific reason:
+those files — only four have been touched, and each for a specific reason:
 
 - `chart.tsx` — added `data-slot` markers; the swatch color moved from an inline
   `backgroundColor` to a `--color-swatch` custom property, because an inline style beats any
@@ -168,6 +168,9 @@ those files — only three have been touched, and each for a specific reason:
   every button rule.
 - `scroll-area.tsx` — removed an unused `import * as React` that broke `pnpm build` under
   `noUnusedLocals`.
+- `sidebar.tsx` — its `useIsMobile` import now reads `!useIsDesktop()` from
+  `src/hooks/use-media-query.ts`. The component is unused, but `tsc -b` typechecks it anyway,
+  so it was the one thing pinning the old hook in place.
 
 **TypeScript**: `erasableSyntaxOnly` (no enums, no parameter properties), `verbatimModuleSyntax`
 (`import type` required), `noExplicitAny` is an error, `@/` aliases `src/`. TypeScript 7 native.
