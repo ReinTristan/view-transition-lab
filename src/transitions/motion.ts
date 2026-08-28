@@ -15,10 +15,6 @@ import type { TransitionEngine } from './types'
  * soon as `ready` resolved, before Motion painted a single frame.
  */
 export const motionEngine: TransitionEngine = {
-  id: 'motion',
-  label: 'Motion',
-  modes: ['bridge'],
-
   async run(apply, ctx) {
     if (ctx.reducedMotion || !supportsViewTransitions()) {
       apply()

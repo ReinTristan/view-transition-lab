@@ -7,10 +7,6 @@ import type { TransitionEngine } from './types'
  * that is left in JS is computing the origin and making the call.
  */
 export const nativeEngine: TransitionEngine = {
-  id: 'native',
-  label: 'Native',
-  modes: ['native'],
-
   async run(apply, ctx) {
     if (ctx.reducedMotion || !supportsViewTransitions()) {
       apply()

@@ -1,4 +1,4 @@
-import type { EngineId } from '@/transitions/types'
+import { DEFAULT_ENGINE, type EngineId, isEngineId } from '@/transitions/types'
 import type { ThemeId } from './registry'
 import { DEFAULT_THEME, isThemeId, themes } from './registry'
 
@@ -68,7 +68,16 @@ export function applyTheme(id: ThemeId) {
 
 /* --- Engine --------------------------------------------------------------- */
 
-let engineId: EngineId = (read(KEY_ENGINE) as EngineId | null) ?? 'native'
+/**
+ * Validated on read, exactly like the theme is. A stale or hand-edited id used
+ * to come straight through a cast: the Select was left with a `value` matching
+ * none of its items, the hub header rendered an undefined label, and worst of
+ * all loaderFor() quietly ran native while the picker still claimed GSAP.
+ */
+const storedEngine = read(KEY_ENGINE)
+let engineId: EngineId = isEngineId(storedEngine)
+  ? storedEngine
+  : DEFAULT_ENGINE
 
 export function getEngine(): EngineId {
   return engineId
@@ -82,15 +91,39 @@ export function setEngine(id: EngineId) {
 
 /* --- Speed ---------------------------------------------------------------- */
 
-let speed = Number(read(KEY_SPEED)) || 1
+/**
+ * The slider's range lives here, not in the control, so the value read back
+ * from localStorage and the widget rendering it cannot disagree.
+ */
+export const SPEED_MIN = 0.25
+export const SPEED_MAX = 2
+export const SPEED_STEP = 0.25
+export const DEFAULT_SPEED = 1
+
+function clampSpeed(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_SPEED
+  // Multiples of 0.25 are exact in binary, so snapping adds no drift.
+  const snapped = Math.round(value / SPEED_STEP) * SPEED_STEP
+  return Math.min(SPEED_MAX, Math.max(SPEED_MIN, snapped))
+}
+
+function readSpeed(): number {
+  const raw = read(KEY_SPEED)
+  // Not clampSpeed(Number(raw)) alone: Number(null) and Number('') are both 0,
+  // which would clamp to the minimum instead of falling back to 1x.
+  return raw ? clampSpeed(Number(raw)) : DEFAULT_SPEED
+}
+
+let speed = readSpeed()
 
 export function getSpeed(): number {
   return speed
 }
 
+/** Clamped on write too, so nothing out of range can be persisted. */
 export function setSpeed(value: number) {
-  speed = value
-  write(KEY_SPEED, String(value))
+  speed = clampSpeed(value)
+  write(KEY_SPEED, String(speed))
   emit()
 }
 
