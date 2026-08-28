@@ -7,8 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { setEngine, useEngineId } from '@/themes/use-theme'
-import type { EngineId } from '@/transitions'
-import { engineList } from '@/transitions'
+import { engineList, isEngineId } from '@/transitions'
 
 export function EnginePicker() {
   const active = useEngineId()
@@ -20,7 +19,11 @@ export function EnginePicker() {
       </Label>
       <Select
         value={active}
-        onValueChange={(value) => setEngine(value as EngineId)}
+        // Guarded rather than cast: the Select hands back a loose value, and
+        // an id that is not an engine has no business reaching the store.
+        onValueChange={(value) => {
+          if (isEngineId(value)) setEngine(value)
+        }}
       >
         <SelectTrigger id='engine' size='sm' className='w-40'>
           <SelectValue />

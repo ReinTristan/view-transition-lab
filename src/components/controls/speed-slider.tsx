@@ -1,6 +1,6 @@
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { BASE_DURATION } from '@/themes/store'
+import { BASE_DURATION, SPEED_MAX, SPEED_MIN, SPEED_STEP } from '@/themes/store'
 import { setSpeed, useSpeed } from '@/themes/use-theme'
 
 /**
@@ -33,9 +33,12 @@ export function SpeedSlider() {
         // prefix is what lets tailwind-merge recognise the two as the same
         // class and drop the one underneath, instead of leaving both to race.
         className='data-horizontal:w-40 md:data-horizontal:w-25'
-        min={0.25}
-        max={2}
-        step={0.25}
+        // The range lives in the store, which is also what clamps whatever
+        // comes back from localStorage. Hardcoding it here again would let the
+        // widget and the persisted value drift apart.
+        min={SPEED_MIN}
+        max={SPEED_MAX}
+        step={SPEED_STEP}
         value={[speed]}
         onValueChange={(value) => {
           setSpeed(Array.isArray(value) ? value[0] : value)

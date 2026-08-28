@@ -18,9 +18,10 @@ import { useThemeId, useThemeSwitcher } from '@/themes/use-theme'
  * weight still says which one is the navigation.
  *
  * The marker is written as the transition's `mutate`, so it lands in the very
- * same DOM mutation as applyTheme. That also means the anti-overlap lock in
- * runTransition swallowing a click leaves the marker untouched, which is right:
- * the theme did not change either.
+ * same DOM mutation as applyTheme. A click that arrives mid-wipe is held by
+ * runTransition's anti-overlap slot and its mutate travels with it, so the
+ * marker still lands together with the theme it belongs to — never ahead of a
+ * swap that has not happened yet.
  */
 export function ThemeSwapper({ className }: { className?: string }) {
   const active = useThemeId()
