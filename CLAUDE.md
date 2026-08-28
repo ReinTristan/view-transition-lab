@@ -68,12 +68,6 @@ from the theme registry:
 `ThemeMeta.scheme` in `src/themes/registry.ts`. The only preference media query consulted
 anywhere is `prefers-reduced-motion`.
 
-### The anti-FOUC script duplicates the scheme map on purpose
-
-`index.html` sets `data-theme`/`data-scheme` before the first paint. An inline script cannot
-import from `src/themes/registry.ts`, so the theme→scheme map is duplicated there. **If a
-theme's `scheme` changes in the registry, mirror it in `index.html`.**
-
 ### The bridge keepalive is the most fragile part
 
 `::view-transition-*` pseudo-elements **are not DOM nodes**, so GSAP and anime.js have nothing

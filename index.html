@@ -5,38 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>view-transition-demo</title>
-    <script>
-      // Anti-FOUC: applies the theme before the first paint. With seven themes
-      // and routes that force their own, the flash is very visible without it.
-      //
-      // The map is duplicated on purpose: an inline script cannot import from
-      // src/themes/registry.ts. If a theme's scheme changes there, it has to be
-      // mirrored here.
-      //
-      // Subject to improvement: the duplicated map is a maintenance hazard, and
-      // reading localStorage synchronously before paint is not free. Worth
-      // revisiting — a build-time inlined map would remove the drift risk.
-      ;(function () {
-        var schemes = {
-          pastel: 'light',
-          anthropic: 'light',
-          frutiger: 'light',
-          y2k: 'light',
-          cyberpunk: 'dark',
-          glass: 'light',
-          neobrutalism: 'light',
-        }
-        var id = null
-        try {
-          id = localStorage.getItem('vtd:theme')
-        } catch (_error) {
-          // Safari in private mode. Falls back to the default theme.
-        }
-        if (!id || !schemes[id]) id = 'pastel'
-        document.documentElement.dataset.theme = id
-        document.documentElement.dataset.scheme = schemes[id]
-      })()
-    </script>
   </head>
   <body>
     <div id="root"></div>
