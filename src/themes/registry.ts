@@ -137,6 +137,7 @@ export const themeList: ThemeMeta[] = Object.values(themes)
 /** Fixed, not derived from the system. */
 export const DEFAULT_THEME: ThemeId = 'pastel'
 
-export function isThemeId(value: string | undefined | null): value is ThemeId {
-  return value != null && value in themes
+/** Takes unknown so it can also guard values coming back from storage. */
+export function isThemeId(value: unknown): value is ThemeId {
+  return typeof value === 'string' && value in themes
 }

@@ -30,7 +30,7 @@ function Section({
  *
  * Deliberately small and free of any reference to this project: what gives a
  * theme away is radius, border, shadow and typeface, and a row of buttons plus
- * a card show all four. The full component gallery belongs in /lab.
+ * a card show all four. The full component gallery lands on the root route.
  */
 export function Showcase() {
   return (

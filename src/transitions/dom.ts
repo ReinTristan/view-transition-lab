@@ -13,6 +13,15 @@ export function supportsViewTransitions(): boolean {
 }
 
 /**
+ * The only preference media query the project consults: light and dark are
+ * decided by the theme, never by the system. It sits next to the support check
+ * because both answer the same kind of question — what does the browser say.
+ */
+export function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+/**
  * Gets the document ready for the wipe: circle origin, radius, duration and
  * mode. The mode is read from transitions.css to decide whether CSS drives the
  * animation or a library does.
