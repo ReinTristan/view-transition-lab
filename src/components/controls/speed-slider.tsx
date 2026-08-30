@@ -1,7 +1,13 @@
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { BASE_DURATION, SPEED_MAX, SPEED_MIN, SPEED_STEP } from '@/themes/store'
-import { setSpeed, useSpeed } from '@/themes/use-theme'
+import {
+  BASE_DURATION,
+  SPEED_MAX,
+  SPEED_MIN,
+  SPEED_STEP,
+  useSpeed,
+  useThemeStore,
+} from '@/themes/use-theme-store'
 
 /**
  * Slowing the wipe down is what makes a view transition inspectable without
@@ -9,6 +15,7 @@ import { setSpeed, useSpeed } from '@/themes/use-theme'
  */
 export function SpeedSlider() {
   const speed = useSpeed()
+  const setSpeed = useThemeStore((state) => state.setSpeed)
   const duration = Math.round(BASE_DURATION / speed)
 
   return (

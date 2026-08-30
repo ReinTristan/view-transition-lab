@@ -1,8 +1,11 @@
 import { useEffect } from 'react'
 import { Showcase } from '@/components/showcase/showcase'
 import { themeList, themes } from '@/themes/registry'
-import { getHubTheme, getTheme } from '@/themes/store'
-import { useEngineId, useThemeId } from '@/themes/use-theme'
+import {
+  useEngineId,
+  useThemeId,
+  useThemeStore,
+} from '@/themes/use-theme-store'
 import { engineList, runTransition } from '@/transitions'
 
 export function HubRoute() {
@@ -19,8 +22,8 @@ export function HubRoute() {
   // Mount only on purpose. getHubTheme() changes on every swap, so depending on
   // it would make the write re-trigger the restore in a loop.
   useEffect(() => {
-    const pinned = getHubTheme()
-    if (!pinned || getTheme() === pinned) return
+    const { hubTheme: pinned, theme } = useThemeStore.getState()
+    if (!pinned || theme === pinned) return
     void runTransition(pinned, {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,

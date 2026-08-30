@@ -3,7 +3,7 @@ import { Navigate, useParams } from 'react-router'
 import { Showcase } from '@/components/showcase/showcase'
 import { Badge } from '@/components/ui/badge'
 import { isThemeId, themes } from '@/themes/registry'
-import { getTheme } from '@/themes/store'
+import { useThemeStore } from '@/themes/use-theme-store'
 import { runTransition } from '@/transitions'
 
 /**
@@ -15,7 +15,8 @@ export function ThemeRoute() {
   const { themeId } = useParams()
 
   useEffect(() => {
-    if (!isThemeId(themeId) || getTheme() === themeId) return
+    if (!isThemeId(themeId) || useThemeStore.getState().theme === themeId)
+      return
     void runTransition(themeId, {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,

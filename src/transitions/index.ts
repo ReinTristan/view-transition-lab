@@ -1,11 +1,6 @@
 import type { ThemeId } from '@/themes/registry'
-import {
-  applyTheme,
-  getDuration,
-  getEngine,
-  prefersReducedMotion,
-  setEngine,
-} from '@/themes/store'
+import { getDuration, useThemeStore } from '@/themes/use-theme-store'
+import { prefersReducedMotion } from './dom'
 import type { EngineId, TransitionEngine, TransitionMode } from './types'
 import { DEFAULT_ENGINE } from './types'
 
@@ -87,31 +82,13 @@ function loaderFor(id: EngineId) {
   // Falling back quietly is the one thing this lab must not do: the picker
   // would keep saying GSAP while native ran, and the bundle figures it reports
   // would be measuring something else entirely. Correcting the selection makes
-  // the UI catch up with what actually executes — setEngine emits, so the
-  // picker repaints to Native on its own.
+  // the UI catch up with what actually executes.
   console.warn(
-    `[transitions] no loader for "${id}" yet — falling back to native.`
+    `[transitions] no loader for "${id}" yet - falling back to native.`
   )
-  setEngine(DEFAULT_ENGINE)
+  useThemeStore.getState().setEngine(DEFAULT_ENGINE)
   return loaders.native
 }
-
-interface PendingRun {
-  theme: ThemeId
-  origin: { x: number; y: number }
-  mutate?: () => void
-}
-
-/**
- * Prevents overlapping wipes: if a second theme change arrives while a
- * transition is still alive, the browser aborts the first one and the result is
- * a flicker. So the incoming click waits instead of running.
- *
- * A single slot, not a queue, and the last one wins: chaining every click would
- * make a rapid burst play a train of wipes long after you stopped clicking.
- */
-let running = false
-let queued: PendingRun | null = null
 
 /**
  * `mutate` runs inside the very same DOM mutation as the theme swap, which is
@@ -121,23 +98,34 @@ let queued: PendingRun | null = null
  *
  * It travels with the pending run too, so a click that had to wait still gets
  * its navigation and its hub marker in that same mutation.
+ *
+ * This module holds no state of its own: the anti-overlap slot lives in the
+ * store, which is what gives the UI a real `running` flag to read.
  */
 export async function runTransition(
   theme: ThemeId,
   origin: { x: number; y: number },
   mutate?: () => void
 ) {
-  if (running) {
-    queued = { theme, origin, mutate }
+  const store = useThemeStore.getState()
+
+  // Anti-overlap: a second theme change while a wipe is still alive would make
+  // the browser abort the first one and flicker. A single slot, not a queue,
+  // and the last one wins — chaining every click would make a rapid burst play
+  // a train of wipes long after you stopped clicking.
+  if (store.running) {
+    store.setQueued({ theme, origin, mutate })
     return
   }
-  running = true
+  store.setRunning(true)
 
   try {
-    const engine = await loaderFor(getEngine())()
+    const engine = await loaderFor(store.engine)()
     await engine.run(
       () => {
-        applyTheme(theme)
+        // setTheme writes the attributes synchronously before it touches the
+        // store, so this whole callback is one DOM mutation — see paintTheme.
+        useThemeStore.getState().setTheme(theme)
         mutate?.()
       },
       {
@@ -147,9 +135,9 @@ export async function runTransition(
       }
     )
   } finally {
-    running = false
-    const next = queued
-    queued = null
+    const { setRunning, setQueued, queued: next } = useThemeStore.getState()
+    setRunning(false)
+    setQueued(null)
     // Drained in the finally so a throwing engine cannot strand the pending
     // run. Not awaited: nothing downstream waits on this promise, and awaiting
     // inside a finally would hold the caller's open until the whole chain ends.

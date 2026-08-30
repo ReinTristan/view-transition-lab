@@ -1,34 +1,14 @@
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback } from 'react'
+import type { ThemeId } from '@/themes/registry'
 import { runTransition } from '@/transitions'
-import type { ThemeId } from './registry'
-import {
-  getEngine,
-  getSpeed,
-  getTheme,
-  setEngine,
-  setSpeed,
-  subscribe,
-} from './store'
-
-/**
- * Reads the theme from the DOM via useSyncExternalStore. React only mirrors the
- * value to render the picker UI; writing is applyTheme's job.
- */
-export function useThemeId(): ThemeId {
-  return useSyncExternalStore(subscribe, getTheme)
-}
-
-export function useEngineId() {
-  return useSyncExternalStore(subscribe, getEngine)
-}
-
-export function useSpeed() {
-  return useSyncExternalStore(subscribe, getSpeed)
-}
 
 /**
  * Returns a click handler that switches the theme using the active engine's
  * wipe, taking the click point as the origin.
+ *
+ * It lives here and not in the store on purpose: it imports runTransition, and
+ * transitions/index.ts imports the store — putting it there would close a real
+ * module cycle.
  *
  * `mutate` is handed straight to runTransition, so whatever it does happens in
  * the same DOM mutation as the theme swap.
@@ -48,5 +28,3 @@ export function useThemeSwitcher() {
     []
   )
 }
-
-export { setEngine, setSpeed }

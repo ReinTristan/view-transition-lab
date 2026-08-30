@@ -2,10 +2,10 @@ import { ThemeSwatch } from '@/components/controls/theme-swatch'
 import { CHROME_PANEL } from '@/components/layout/chrome'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useThemeSwitcher } from '@/hooks/use-theme-switcher'
 import { cn } from '@/lib/utils'
 import { themeList } from '@/themes/registry'
-import { setHubTheme } from '@/themes/store'
-import { useThemeId, useThemeSwitcher } from '@/themes/use-theme'
+import { useThemeId, useThemeStore } from '@/themes/use-theme-store'
 
 /**
  * The second way to change the theme: swap it without leaving the page. It only
@@ -18,7 +18,7 @@ import { useThemeId, useThemeSwitcher } from '@/themes/use-theme'
  * weight still says which one is the navigation.
  *
  * The marker is written as the transition's `mutate`, so it lands in the very
- * same DOM mutation as applyTheme. A click that arrives mid-wipe is held by
+ * same DOM mutation as the theme swap. A click that arrives mid-wipe is held by
  * runTransition's anti-overlap slot and its mutate travels with it, so the
  * marker still lands together with the theme it belongs to — never ahead of a
  * swap that has not happened yet.
@@ -26,6 +26,7 @@ import { useThemeId, useThemeSwitcher } from '@/themes/use-theme'
 export function ThemeSwapper({ className }: { className?: string }) {
   const active = useThemeId()
   const switchTheme = useThemeSwitcher()
+  const setHubTheme = useThemeStore((state) => state.setHubTheme)
 
   return (
     <section

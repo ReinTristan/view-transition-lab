@@ -2,9 +2,10 @@ import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router'
 import { ThemeSwatch } from '@/components/controls/theme-swatch'
 import { Button } from '@/components/ui/button'
+import { useThemeSwitcher } from '@/hooks/use-theme-switcher'
 import { cn } from '@/lib/utils'
 import { themeList } from '@/themes/registry'
-import { useThemeId, useThemeSwitcher } from '@/themes/use-theme'
+import { useThemeId } from '@/themes/use-theme-store'
 
 /**
  * The navigation, which happens to also be a theme control: a click swaps the

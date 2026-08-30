@@ -6,11 +6,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { setEngine, useEngineId } from '@/themes/use-theme'
+import { useEngineId, useThemeStore } from '@/themes/use-theme-store'
 import { engineList, isEngineId } from '@/transitions'
 
 export function EnginePicker() {
   const active = useEngineId()
+  const setEngine = useThemeStore((state) => state.setEngine)
 
   return (
     <div className='flex items-center gap-2'>
