@@ -13,7 +13,7 @@ import { useThemeId } from '@/themes/use-theme-store'
  * purpose — visual weight is what tells "go to this theme's page" apart from
  * ThemeSwapper's "just repaint what I'm looking at".
  *
- * Both controls read the active theme from the DOM via useThemeId, so they
+ * Both controls read the active theme from the store via useThemeId, so they
  * cannot disagree with each other. The older desync came from marking active by
  * route on one side and by DOM on the other.
  *

@@ -19,8 +19,9 @@ export function HubRoute() {
   // page and coming back does not lose it. Centered origin, same as landing on
   // /theme/:id: there is no click point to take it from.
   //
-  // Mount only on purpose. getHubTheme() changes on every swap, so depending on
-  // it would make the write re-trigger the restore in a loop.
+  // Mount only on purpose, and read through getState() rather than a selector:
+  // hubTheme changes on every swap made here, so subscribing to it would make
+  // the write re-trigger the restore in a loop.
   useEffect(() => {
     const { hubTheme: pinned, theme } = useThemeStore.getState()
     if (!pinned || theme === pinned) return

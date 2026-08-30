@@ -7,16 +7,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```sh
 pnpm dev        # vite dev server, http://localhost:5173
 pnpm build      # tsc -b (TypeScript 7) + vite build
-pnpm lint       # oxlint
+pnpm lint       # biome check --write, repo-wide
 pnpm preview    # serve the production build
 ```
 
-Formatting is Biome, and it is **not** wired into a package script — run it directly, and
-only over the directories you actually wrote:
+Biome is the only linter and formatter here — it lints and formats in the same pass. oxlint
+came with the Vite scaffold and was removed; if you find a reference to it, it is stale.
 
-```sh
-pnpm biome check --write src/themes src/transitions src/routes src/components/{controls,layout,showcase}
-```
+`pnpm lint` writes, and it writes **repo-wide on purpose** — including `src/components/ui/`.
+That is a deliberate call: one command that leaves the whole tree consistent beats a scoped
+one that has to be kept in sync by hand. Those files are already Biome-clean, so the pass is
+a no-op on them today; if one ever does get reformatted, that is expected, not an accident.
 
 There is no test setup in this repo — no test runner, no test script, no test files. Don't
 invent one unless asked.
@@ -163,9 +164,9 @@ and conversation with the user are in Spanish.
 
 **Biome**: single quotes in TS, no semicolons, 2 spaces, width 80.
 
-**`src/components/ui/` is shadcn-generated and deliberately NOT reformatted**, to keep diffs
-clean. Format only what you write. Almost all theming happens from CSS instead of editing
-those files — only four have been touched, and each for a specific reason:
+**`src/components/ui/` is shadcn-generated.** Biome does pass over it (see Commands), but
+don't go editing it by hand: almost all theming happens from CSS instead, and only four files
+have been touched, each for a specific reason:
 
 - `chart.tsx` — added `data-slot` markers; the swatch color moved from an inline
   `backgroundColor` to a `--color-swatch` custom property, because an inline style beats any
@@ -210,8 +211,10 @@ edit). If `docs/` is missing, just proceed — it means someone else cloned the 
 
 ## Known issues
 
-- `vite.config.ts:16` uses `__dirname`, which Vite's native loader warns will stop being
-  supported. Fix with `import.meta.dirname` when convenient.
+- There is a grey-to-theme flash on every load: nothing paints `data-theme` before the bundle
+  parses. `hydrateDom()` runs as early as JS can, which is still after the HTML. Accepted for
+  now — the fix means putting something back in `index.html`, and that brings back a second
+  copy of the scheme map to keep in sync.
 - `@vtbag/inspection-chamber` (frame-by-frame view transition debugging) is installed and its
   dev import lives in `src/main.tsx`, but it is **commented out**: its overlay covered the
   whole page. Unresolved. The speed slider in the top bar (0.25×–2×) is the working way to
