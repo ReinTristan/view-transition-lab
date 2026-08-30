@@ -40,16 +40,24 @@ furthest along but **not** finished — 5 are pendings with a minimum viable pal
 
 These are the things that are not discoverable by reading one file.
 
-### The DOM is the source of truth for the theme, not React
+### The store owns the theme; the DOM attribute is its render target
 
-`applyTheme()` in `src/themes/store.ts` mutates `document.documentElement` **synchronously**.
-React only mirrors the value through `useSyncExternalStore` (`src/themes/use-theme.ts`) to
-render the picker UI.
+State lives in a Zustand store (`src/themes/use-theme-store.ts`), persisted under a single
+`vtd` key by the `persist` middleware. `data-theme` / `data-scheme` on `<html>` are **not** a
+second source of truth: CSS has no other input — `[data-theme='cyberpunk']` can only read the
+DOM — so the attribute is where the state gets painted.
 
-If the theme lived in `useState`, React's batching would delay the DOM mutation until after
-the commit, and `startViewTransition` would capture a "new" snapshot identical to the old one
-— the wipe would render empty. This is the classic first-time bug here; don't refactor it into
-React state.
+**`paintTheme()` writes it synchronously from inside the `setTheme` action, never from an
+effect.** If the write reacted to the store value through `useEffect` it would run
+post-commit, and `startViewTransition` would already have captured a "new" snapshot identical
+to the old one — the wipe would render empty. This is the classic first-time bug here.
+
+It has to be `<html>` and not a wrapper: 14 components portalize into `body`, so a themed div
+inside `#root` would leave every dialog, popover and tooltip outside the theme.
+
+Since the anti-FOUC script was removed from `index.html`, `hydrateDom()` in `main.tsx` is the
+only thing that paints the attributes on load, and it runs before `createRoot`. It lands after
+the bundle parses, so a grey-to-theme flash on load is expected and accepted for now.
 
 ### The theme decides lightness, never `prefers-color-scheme`
 
@@ -98,9 +106,14 @@ lab measures is real (`native` is 0.26 kB, `motion` 61.49 kB). `runTransition()`
 anti-overlap lock — a second theme change while a transition is live would make the browser
 abort the first one and flicker.
 
-Note the module cycle between the two directories: `themes/store.ts` imports
-`transitions/types` (type-only) while `transitions/index.ts` imports `themes/store`. Keep new
-shared types in `transitions/types.ts`.
+Note the import direction between the two directories: `themes/use-theme-store.ts` imports
+`transitions/types` (a leaf module with no imports of its own) while `transitions/index.ts`
+imports the store. Keep new shared types in `transitions/types.ts`.
+
+`useThemeSwitcher` lives in `src/hooks/use-theme-switcher.ts` and **not** in the store,
+precisely because it imports `runTransition` — putting it in the store would close a real
+cycle. `transitions/index.ts` holds no state of its own: the anti-overlap slot
+(`running` / `queued`) is in the store, which is what gives the UI a real `running` flag.
 
 ### CSS layering
 
