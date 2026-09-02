@@ -40,6 +40,30 @@ function paintTheme(id: ThemeId) {
   root.dataset.scheme = themes[id].scheme
 }
 
+/**
+ * Projects the anti-overlap lock onto <html> so CSS can dim the lab controls
+ * while a wipe is alive. Synchronous for the same reason paintTheme is: there
+ * is an `await` on the engine loader between setRunning(true) and
+ * startViewTransition, so a React commit reacting to the store value would race
+ * the browser's snapshot and land in it only sometimes.
+ *
+ * That matters because the two halves of the wipe differ: the old snapshot is a
+ * static image taken at capture time, the new one is live. Miss the capture and
+ * the dimming shows up on one half only, non-deterministically.
+ *
+ * Nothing here sets pointer-events, and it does not need to: while the wipe
+ * plays, hit-testing already resolves to the root, so a click on a control never
+ * reaches its handler. The attribute only makes that visible.
+ */
+function paintRunning(value: boolean) {
+  const root = document.documentElement
+  if (value) {
+    root.dataset.vtRunning = ''
+  } else {
+    delete root.dataset.vtRunning
+  }
+}
+
 /** A theme change that arrived while a wipe was still running. */
 export interface PendingRun {
   theme: ThemeId
@@ -118,7 +142,11 @@ export const useThemeStore = create<ThemeState>()(
       setEngine: (id) => set({ engine: id }),
       setSpeed: (value) => set({ speed: clampSpeed(value) }),
       setHubTheme: (id) => set({ hubTheme: id }),
-      setRunning: (value) => set({ running: value }),
+      // Paints the attribute before touching the store — see paintRunning.
+      setRunning: (value) => {
+        paintRunning(value)
+        set({ running: value })
+      },
       setQueued: (run) => set({ queued: run }),
     }),
     {

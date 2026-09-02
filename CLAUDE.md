@@ -116,6 +116,36 @@ precisely because it imports `runTransition` — putting it in the store would c
 cycle. `transitions/index.ts` holds no state of its own: the anti-overlap slot
 (`running` / `queued`) is in the store, which is what gives the UI a real `running` flag.
 
+### The page is inert while a wipe plays, and the chrome says so
+
+**While the pseudo-elements are painted, hit-testing resolves to the root element.**
+`document.elementFromPoint()` over a theme button mid-wipe returns `<html>`: a real click
+reaches the document and dies there, and the button's `onClick` never runs. Verified with
+Playwright — a `.click()` dispatched from JS drains the anti-overlap slot, a real mouse click
+does not.
+
+So the slot is not what catches a user's second click; there is no such click to catch. Its
+live consumers are the route effects in `hub.tsx` and `theme-route.tsx`, and browser
+back/forward. Don't "fix" the slot on the assumption that a burst of clicking reaches it.
+
+Since the pause is real, the chrome states it: `[data-vt-running]` on `<html>` drops the theme
+buttons, the engine select and the slider to `opacity: 0.5` (`styles/transitions.css`), plus
+`aria-busy` on both panels from `useIsTransitioning()`. Three things there are load-bearing:
+
+- **`paintRunning()` writes the attribute synchronously from inside `setRunning`**, never from
+  an effect — same reasoning as `paintTheme()`. There is an `await` on the engine loader between
+  `setRunning(true)` and `startViewTransition`, so a React commit would race the snapshot
+  capture. And the two halves differ: `::view-transition-old(root)` is a frozen image while
+  `::view-transition-new(root)` is live, so losing that race dims one half only.
+- **`transition: none` on those controls.** `button.tsx` carries `transition-all`, so without it
+  the opacity eases from 1 to 0.5 and the frozen snapshot catches it still at 1 — the control
+  ends up split down the middle by the wipe's edge.
+- **The cursor goes on `:root`, not on the controls.** The cursor follows the hit-tested element,
+  and per the above that is the root.
+
+It is `aria-busy` and not `aria-disabled`: nothing sets `pointer-events`, and the controls are
+not disabled — the browser is simply not routing anything to them for those few hundred ms.
+
 ### CSS layering
 
 `src/index.css` is the import root — fonts, the `dark` variant, `@theme inline`, then

@@ -6,6 +6,7 @@ import { ThemeSwapper } from '@/components/controls/theme-swapper'
 import { CHROME_PANEL } from '@/components/layout/chrome'
 import { Separator } from '@/components/ui/separator'
 import { useIsDesktop } from '@/hooks/use-media-query'
+import { useIsTransitioning } from '@/themes/use-theme-store'
 
 export function AppShell() {
   // useMatch and not location.pathname so it survives a basename. The only
@@ -13,6 +14,10 @@ export function AppShell() {
   // on /theme/:id, which is pinned to a theme by definition.
   const isHub = useMatch('/') !== null
   const isDesktop = useIsDesktop()
+  // The visual half of this lives in CSS, keyed on data-vt-running: see
+  // paintRunning. This is only the semantics, and a frame of React lag costs
+  // nothing there. aria-busy and not aria-disabled — the controls still answer.
+  const running = useIsTransitioning()
   const separatorOrientation = isDesktop ? 'vertical' : 'horizontal'
   return (
     <div className='min-h-dvh'>
@@ -26,7 +31,7 @@ export function AppShell() {
           would swallow every click at that height. CHROME_PANEL turns events
           back on for each pill's own box. */}
       <div className='pointer-events-none sticky top-3 z-30 mt-3 flex flex-col items-center gap-2'>
-        <header className={CHROME_PANEL}>
+        <header className={CHROME_PANEL} aria-busy={running}>
           <div className='flex flex-col flex-wrap items-center gap-x-4 gap-y-2 md:flex-row'>
             <NavLink to='/' className='font-heading font-semibold text-sm'>
               view transitions

@@ -77,6 +77,48 @@
   }
 }
 
+/* --- Busy state ------------------------------------------------------------ */
+
+/* The lab controls dim while a wipe is alive, so the pause has a visible cause.
+ *
+ * The page is genuinely inert for that whole time, and not by our doing: while
+ * the pseudo-elements are painted, hit-testing resolves to the root element.
+ * document.elementFromPoint() over a theme button mid-wipe returns <html>, so
+ * a real click reaches the document and dies there — the button's onClick never
+ * runs. The dimming is therefore describing the truth, not decorating a soft
+ * state, which is also why the cursor goes on :root and not on the controls:
+ * the cursor follows the hit-tested element, and that is the root.
+ *
+ * runTransition's anti-overlap slot still exists and still works, but only the
+ * programmatic paths can reach it now: the route effects in hub.tsx and
+ * theme-route.tsx, and browser back/forward. Not a user click.
+ *
+ * data-vt-running is written synchronously by the store's setRunning, never by
+ * a React commit: see paintRunning in themes/use-theme-store.ts.
+ *
+ * Labels, the nav link and the ms readout are deliberately left alone: they stay
+ * readable, and the point is to mark what is interactive, not to grey the bar. */
+[data-vt-running] {
+  cursor: progress;
+}
+
+[data-vt-running]
+  .app-chrome
+  :is(
+    [data-slot="button"],
+    [data-slot="select-trigger"],
+    [data-slot="slider"]
+  ) {
+  opacity: 0.5;
+  /* button.tsx carries transition-all, so without this the opacity would ease
+     from 1 to 0.5 over the button's own duration. The browser captures the old
+     snapshot at t=0, when that ease has barely started, and freezes it: the
+     control would end up dimmed on the live half of the wipe and bright on the
+     frozen one, split down the middle by the circle's edge. Snapping is what
+     puts the dimming inside both snapshots. */
+  transition: none;
+}
+
 /* --- Accessibility --------------------------------------------------------- */
 
 /* The engines already skip startViewTransition under reduced-motion; this is

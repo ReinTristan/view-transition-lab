@@ -5,7 +5,11 @@ import { Separator } from '@/components/ui/separator'
 import { useThemeSwitcher } from '@/hooks/use-theme-switcher'
 import { cn } from '@/lib/utils'
 import { themeList } from '@/themes/registry'
-import { useThemeId, useThemeStore } from '@/themes/use-theme-store'
+import {
+  useIsTransitioning,
+  useThemeId,
+  useThemeStore,
+} from '@/themes/use-theme-store'
 
 /**
  * The second way to change the theme: swap it without leaving the page. It only
@@ -27,10 +31,12 @@ export function ThemeSwapper({ className }: { className?: string }) {
   const active = useThemeId()
   const switchTheme = useThemeSwitcher()
   const setHubTheme = useThemeStore((state) => state.setHubTheme)
+  const running = useIsTransitioning()
 
   return (
     <section
       aria-label='Swap theme without leaving the hub'
+      aria-busy={running}
       className={cn(CHROME_PANEL, className)}
     >
       <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
