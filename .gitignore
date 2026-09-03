@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Vitest browser mode
+coverage
+.vitest-attachments
+**/__screenshots__

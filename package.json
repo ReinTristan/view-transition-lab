@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "pnpm biome check --write",
     "preview": "vite preview"
   },
@@ -55,9 +58,15 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "@vitest/browser": "^4.1.11",
+    "@vitest/browser-playwright": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.11",
     "@vtbag/inspection-chamber": "^1.0.24",
     "babel-plugin-react-compiler": "^1.0.0",
+    "playwright": "^1.62.1",
     "typescript": "7.0.2",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.11",
+    "vitest-browser-react": "^2.2.0"
   }
 }
