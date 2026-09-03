@@ -5,10 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```sh
-pnpm dev        # vite dev server, http://localhost:5173
-pnpm build      # tsc -b (TypeScript 7) + vite build
-pnpm lint       # biome check --write, repo-wide
-pnpm preview    # serve the production build
+pnpm dev            # vite dev server, http://localhost:5173
+pnpm build          # tsc -b (TypeScript 7) + vite build
+pnpm lint           # biome check --write, repo-wide
+pnpm preview        # serve the production build
+pnpm test           # vitest in browser mode (watch)
+pnpm test:run       # one pass
+pnpm test:coverage  # v8 report over the core, no thresholds
 ```
 
 Biome is the only linter and formatter here — it lints and formats in the same pass. oxlint
@@ -19,8 +22,29 @@ That is a deliberate call: one command that leaves the whole tree consistent bea
 one that has to be kept in sync by hand. Those files are already Biome-clean, so the pass is
 a no-op on them today; if one ever does get reformatted, that is expected, not an accident.
 
-There is no test setup in this repo — no test runner, no test script, no test files. Don't
-invent one unless asked.
+### Tests run in a real browser, and that is not a preference
+
+Vitest 4 in **browser mode**, Playwright provider, Chromium headless. jsdom would be useless
+here: `startViewTransition` does not exist in it, the `::view-transition-*` pseudo-elements are
+not DOM nodes, and half of what the suite asserts is computed style out of a real cascade with
+Tailwind compiled.
+
+- Tests live in **`test/` at the root**, not next to the sources, with their own
+  `tsconfig.test.json` referenced from the solution file. So `pnpm build` typechecks them too —
+  a broken test breaks the build. `vitest.config.ts` is referenced from `tsconfig.node.json`.
+- `vitest.config.ts` is separate and `mergeConfig`s `vite.config.ts`, because the tests need the
+  very same pipeline the app gets (the `@` alias, and Tailwind compiling the themes for real).
+- **`optimizeDeps.include` there is load-bearing.** The engines are dynamic imports, so Vite
+  discovers them mid-run and *reloads the test file*, which surfaces as a flake with no cause.
+  A new engine means a new line there.
+- Coverage is v8, report only, scoped to `themes/`, `transitions/`, `hooks/` and
+  `components/{controls,layout}`. `components/ui/` is excluded on purpose: 61 shadcn files inside
+  the include would measure shadcn, not the lab.
+- **The engine conformance suite is the piece to know about.** `test/transitions/engines.test.ts`
+  enumerates `engineList.filter((e) => e.ready)`, so gsap, tailwind and anime enrol themselves
+  the day their loader lands — no test edit. `docs/testing.md` holds the contract.
+- `document.getAnimations()` filtered by `effect.pseudoElement` is the only window into the
+  view-transition pseudo-elements. That is how the bridge keepalive is actually tested.
 
 ## What this project is
 
@@ -218,8 +242,8 @@ task — each has its own obstacles against the base system.
 
 ## Local-only files
 
-`docs/` (`workflow.md`, `tasks.md`) holds the user's working notes and is **not committed** —
-it is excluded via `.git/info/exclude`. It is the richest context available, but never assume
+`docs/` (`workflow.md`, `tasks.md`, `testing.md`) holds the user's working notes and is **not
+committed** — it is excluded via `.git/info/exclude`. It is the richest context available, but never assume
 it exists for anyone else, and don't reference it from committed files.
 
 **The start point**: at the start of any session, read `docs/` to get the context of the
@@ -232,6 +256,8 @@ direction of the lab.
 - `docs/tasks.md` — the per-theme breakdown: current status table (which themes are done vs.
   pendings), each theme's design direction, and **the specific obstacles that theme faces against
   the base system**. This is the input to the individual plan.
+- `docs/testing.md` — the testing strategy and the executable contract every pending engine has
+  to satisfy. Read it before implementing gsap, tailwind or anime.
 
 This file describes decisions that are already made and stable; `docs/` describes what is
 still in motion. When they disagree about current state, `docs/` wins — and say so.
@@ -241,6 +267,17 @@ edit). If `docs/` is missing, just proceed — it means someone else cloned the 
 
 ## Known issues
 
+- **The themes do not actually paint.** The `:root` blocks in `index.css` (the neutral palette at
+  line 91, the surface defaults at line 162) sit **after** the `@import`s of the theme files, so
+  at equal specificity they win by source order. Every theme computes
+  `--background: oklch(1 0 0)` and `--radius: 0.625rem`; only `--theme-font-*` survives, because
+  that is the one thing `:root` does not declare. Found by the test suite and confirmed in the
+  running app. `theme-contract.test.tsx > two opposite themes paint the same card differently` is
+  red because of this, deliberately. The fix is to wrap those two `:root` blocks in
+  `@layer base`, so unlayered theme rules outrank them — not decided yet.
+- The engine `Select` trigger prints the raw engine id, not the label from `engineList`:
+  `SelectValue` has no item list to map it through. Invisible for `native`/`motion`, visible the
+  day `gsap` and `anime.js` land.
 - There is a grey-to-theme flash on every load: nothing paints `data-theme` before the bundle
   parses. `hydrateDom()` runs as early as JS can, which is still after the HTML. Accepted for
   now — the fix means putting something back in `index.html`, and that brings back a second
