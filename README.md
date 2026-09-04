@@ -1,8 +1,14 @@
 # view-transition-lab
 
+**[Live demo → vtlab.reintristan.dev](https://vtlab.reintristan.dev)**
+
 A small lab for understanding and practicing the **View Transitions API**.
 
 The main idea is to get **the same interaction** using multiple animation engines to compare flavors and options testing it with multiple themes through a theme switcher.
+
+![Three theme wipes in a row: cyberpunk to neobrutalism to pastel and back, each one a circular reveal starting from the button that was clicked.](./media/demo.gif)
+
+Recorded at 1×, the real 600 ms. The circle always opens from the point you clicked.
 
 > [!Warning] Work in progress. This is a proof of concept. I'm not a designer neither and artist so if the themes lack of some characteristics or style let me know.
 

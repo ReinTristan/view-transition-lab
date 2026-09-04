@@ -257,7 +257,7 @@ task — each has its own obstacles against the base system.
 
 ## Local-only files
 
-`docs/` (`workflow.md`, `tasks.md`, `testing.md`) holds the user's working notes and is **not
+`docs/` (`workflow.md`, `tasks.md`, `testing.md`, `media.md`) holds the user's working notes and is **not
 committed** — it is excluded via `.git/info/exclude`. It is the richest context available, but never assume
 it exists for anyone else, and don't reference it from committed files.
 
@@ -273,6 +273,9 @@ direction of the lab.
   the base system**. This is the input to the individual plan.
 - `docs/testing.md` — the testing strategy and the executable contract every pending engine has
   to satisfy. Read it before implementing gsap, tailwind or anime.
+- `docs/media.md` — how `public/og.png` and `media/demo.gif` are regenerated with Playwright and
+  ffmpeg. Both are captures of the real app, so **a theme redesign or a change to the control bar
+  makes them lie** — read it whenever that happens, before shipping the change.
 
 This file describes decisions that are already made and stable; `docs/` describes what is
 still in motion. When they disagree about current state, `docs/` wins — and say so.

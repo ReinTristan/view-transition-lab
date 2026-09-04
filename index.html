@@ -11,16 +11,24 @@
       content="The same theme switch implemented N times behind one interface, so View Transitions API engines and modes can be compared honestly."
     />
 
-    <!-- og:url and og:image land in the next pass, once the domain exists.
-         twitter:card=summary renders correctly without an image. -->
+    <!-- og:image has to be absolute: Twitter, Slack and Discord do not resolve
+         a relative path reliably. It is a real frame of a wipe opening. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="vt-lab" />
+    <meta property="og:url" content="https://vtlab.reintristan.dev/" />
     <meta property="og:title" content="vt-lab — View Transitions API, seven themes, N engines" />
     <meta
       property="og:description"
       content="The same theme switch implemented N times behind one interface, so View Transitions API engines and modes can be compared honestly."
     />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://vtlab.reintristan.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="A circular wipe opening: the pastel theme revealed over the cyberpunk one, mid-transition."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
