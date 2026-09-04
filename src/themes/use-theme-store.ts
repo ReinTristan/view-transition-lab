@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { DEFAULT_ENGINE, type EngineId, isEngineId } from '@/transitions/types'
+import { paintFavicon } from './favicon'
 import type { ThemeId } from './registry'
 import { DEFAULT_THEME, isThemeId, themes } from './registry'
 
@@ -38,6 +39,10 @@ function paintTheme(id: ThemeId) {
   const root = document.documentElement
   root.dataset.theme = id
   root.dataset.scheme = themes[id].scheme
+  // The tab icon follows the theme too. It does not need the synchrony above —
+  // the favicon is not part of the wipe's snapshot — but it lives here so there
+  // is a single place that projects the theme onto the document.
+  paintFavicon(id)
 }
 
 /**

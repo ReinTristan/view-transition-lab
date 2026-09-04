@@ -80,6 +80,14 @@ to the old one — the wipe would render empty. This is the classic first-time b
 It has to be `<html>` and not a wrapper: 14 components portalize into `body`, so a themed div
 inside `#root` would leave every dialog, popover and tooltip outside the theme.
 
+`paintTheme()` has a second job: the **favicon follows the theme**. `themes/favicon.ts` builds the
+`ThemeSwatch` mark from `ThemeMeta.swatch` as a `data:` URI and rewrites `link[rel=icon]`, so there
+is no file per theme and the two cannot drift. It does not need the synchrony above — the favicon
+is not in the wipe's snapshot — but it lives there so one function owns theme-to-document. The
+capsule is fatter than the component's and drops its `ring-1`, both to keep colour at 16px.
+`public/favicon.svg` is the pre-bundle fallback and duplicates the default theme's swatch; a test
+in `test/dom/favicon.test.ts` compares the file against `faviconSvg()` so that copy cannot rot.
+
 Since the anti-FOUC script was removed from `index.html`, `hydrateDom()` in `main.tsx` is the
 only thing that paints the attributes on load, and it runs before `createRoot`. It lands after
 the bundle parses, so a grey-to-theme flash on load is expected and accepted for now.
