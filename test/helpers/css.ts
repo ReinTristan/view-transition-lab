@@ -53,6 +53,22 @@ export function declaredProperties(id: ThemeId): Set<string> {
   return declared
 }
 
+/**
+ * The value a theme declares for one custom property, last declaration wins —
+ * which is what the cascade would pick among the theme's own rules.
+ */
+export function declaredValue(id: ThemeId, prop: string): string | null {
+  const target = `[data-theme=${id}]`
+  let value: string | null = null
+
+  for (const rule of allStyleRules()) {
+    if (!normalise(rule.selectorText).includes(target)) continue
+    const declared = rule.style.getPropertyValue(prop)
+    if (declared) value = declared.trim()
+  }
+  return value
+}
+
 /** Paints a theme on <html> exactly the way the store's paintTheme does. */
 export function applyTheme(id: ThemeId) {
   const root = document.documentElement

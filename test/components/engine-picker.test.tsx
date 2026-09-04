@@ -26,14 +26,13 @@ describe('EnginePicker', () => {
     useThemeStore.getState().setEngine('motion')
     const screen = await render(<EnginePicker />)
 
-    // Lowercased because the trigger prints the raw value, not the label from
-    // engineList: SelectValue has no item list to map it through. Harmless for
-    // native/motion, visible the day GSAP and anime.js land.
+    // The label from engineList, not the raw id: SelectValue is handed a
+    // formatter. Harmless-looking for native/motion, but it is what keeps the
+    // trigger from printing 'gsap' next to 'Native' the day GSAP lands.
     expect(
-      screen.container
-        .querySelector('[data-slot="select-trigger"]')
-        ?.textContent?.toLowerCase()
-    ).toContain('motion')
+      screen.container.querySelector('[data-slot="select-trigger"]')
+        ?.textContent
+    ).toContain('Motion')
   })
 
   // An engine with no loader must not look pickable: choosing it would run

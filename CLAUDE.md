@@ -176,6 +176,21 @@ not disabled — the browser is simply not routing anything to them for those fe
 `styles/transitions.css` and every `styles/themes/*.css`. Adding a theme file means adding its
 `@import` there too.
 
+**The neutral defaults live in `@layer base`, and that is the only reason the themes paint.**
+An unlayered rule beats a layered one whatever its specificity, and the theme files are in no
+layer — so `[data-theme='pastel']` outranks the `:root` defaults even though `:root` comes later
+in the file. Unlayered, those defaults sat after the theme `@import`s and won on source order at
+equal specificity (0,1,0): every theme computed `--background: oklch(1 0 0)` and
+`--radius: 0.625rem`, and only `--theme-font-*` survived, because that is the one thing `:root`
+does not declare. Nothing may move the defaults out of that layer.
+
+`.app-chrome` is the deliberate exception and stays **unlayered**: it has to keep outranking
+`[data-theme]` so the control bar stays on Geist while themes are compared.
+
+The `.dark {…}` block shadcn ships is not here. Nothing in this project sets that class — the 86
+`dark:` utilities key on `[data-scheme]` through the custom variant, and the scheme comes from
+the theme registry.
+
 Fonts go through an indirection (`--font-sans: var(--theme-font-sans, …)`) because
 `@theme inline` bakes the value into the utility; without the intermediate `var()` all 7
 themes would be pinned to Geist.
@@ -267,17 +282,6 @@ edit). If `docs/` is missing, just proceed — it means someone else cloned the 
 
 ## Known issues
 
-- **The themes do not actually paint.** The `:root` blocks in `index.css` (the neutral palette at
-  line 91, the surface defaults at line 162) sit **after** the `@import`s of the theme files, so
-  at equal specificity they win by source order. Every theme computes
-  `--background: oklch(1 0 0)` and `--radius: 0.625rem`; only `--theme-font-*` survives, because
-  that is the one thing `:root` does not declare. Found by the test suite and confirmed in the
-  running app. `theme-contract.test.tsx > two opposite themes paint the same card differently` is
-  red because of this, deliberately. The fix is to wrap those two `:root` blocks in
-  `@layer base`, so unlayered theme rules outrank them — not decided yet.
-- The engine `Select` trigger prints the raw engine id, not the label from `engineList`:
-  `SelectValue` has no item list to map it through. Invisible for `native`/`motion`, visible the
-  day `gsap` and `anime.js` land.
 - There is a grey-to-theme flash on every load: nothing paints `data-theme` before the bundle
   parses. `hydrateDom()` runs as early as JS can, which is still after the HTML. Accepted for
   now — the fix means putting something back in `index.html`, and that brings back a second

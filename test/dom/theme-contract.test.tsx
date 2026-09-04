@@ -3,7 +3,7 @@ import { render } from 'vitest-browser-react'
 import { Card } from '@/components/ui/card'
 import type { ThemeId } from '@/themes/registry'
 import { themeList, themes } from '@/themes/registry'
-import { applyTheme, declaredProperties } from '../helpers/css'
+import { applyTheme, declaredProperties, declaredValue } from '../helpers/css'
 
 /**
  * The second layer every theme must define. The ~25 shadcn colour tokens are
@@ -40,6 +40,22 @@ describe.each(themeList.map((theme) => theme.id))('theme %s', (id) => {
   test('paints the scheme the registry says', () => {
     applyTheme(id)
     expect(document.documentElement.dataset.scheme).toBe(themes[id].scheme)
+  })
+
+  // The cascade guard. index.css keeps a neutral :root of defaults, and it has
+  // to stay a *default*: it lives in @layer base so the unlayered theme files
+  // outrank it. Unlayered, it sat after their @imports and won on source order
+  // at equal specificity — every theme computed 0.625rem and nothing painted.
+  //
+  // --radius and not a colour on purpose: a scalar compares as a string without
+  // depending on how the browser normalises oklch() or a multi-line gradient.
+  test('its own tokens beat the neutral defaults', () => {
+    applyTheme(id)
+    const computed = getComputedStyle(document.documentElement)
+      .getPropertyValue('--radius')
+      .trim()
+
+    expect(computed).toBe(declaredValue(id, '--radius'))
   })
 })
 

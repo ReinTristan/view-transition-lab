@@ -27,7 +27,14 @@ export function EnginePicker() {
         }}
       >
         <SelectTrigger id='engine' size='sm' className='w-40'>
-          <SelectValue />
+          {/* SelectValue renders the raw value unless it is handed a formatter,
+              so the trigger would print the id. engineList is already the list
+              feeding the popup — no second map to keep in sync. */}
+          <SelectValue>
+            {(value) =>
+              engineList.find((engine) => engine.id === value)?.label ?? value
+            }
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {engineList.map((engine) => (
