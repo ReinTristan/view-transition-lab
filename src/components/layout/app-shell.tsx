@@ -4,6 +4,7 @@ import { SpeedSlider } from '@/components/controls/speed-slider'
 import { ThemePicker } from '@/components/controls/theme-picker'
 import { ThemeSwapper } from '@/components/controls/theme-swapper'
 import { CHROME_PANEL } from '@/components/layout/chrome'
+import { GithubIcon } from '@/components/ui/github-icon'
 import { Separator } from '@/components/ui/separator'
 import { useIsDesktop } from '@/hooks/use-media-query'
 import { useIsTransitioning } from '@/themes/use-theme-store'
@@ -32,7 +33,7 @@ export function AppShell() {
           back on for each pill's own box. */}
       <div className='pointer-events-none sticky top-3 z-30 mt-3 flex flex-col items-center gap-2'>
         <header className={CHROME_PANEL} aria-busy={running}>
-          <div className='flex flex-col flex-wrap items-center gap-x-4 gap-y-2 md:flex-row'>
+          <nav className='flex flex-col flex-wrap items-center gap-x-4 gap-y-2 md:flex-row'>
             <NavLink to='/' className='font-heading font-semibold text-sm'>
               view transitions
             </NavLink>
@@ -40,7 +41,21 @@ export function AppShell() {
             <EnginePicker />
             <Separator orientation={separatorOrientation} />
             <SpeedSlider />
-          </div>
+            <Separator orientation={separatorOrientation} />
+            {/* End of the row and not pushed right: CHROME_PANEL is w-fit, so
+                the panel hugs its content and there is no right edge to push
+                against. The busy-state rule leaves it alone on purpose — it
+                dims what is interactive, not the whole bar. */}
+            <a
+              href='https://github.com/ReinTristan/view-transition-lab'
+              target='_blank'
+              rel='noreferrer'
+              className='flex items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground'
+            >
+              made by ReinTristan
+              <GithubIcon className='size-3.5' />
+            </a>
+          </nav>
           <Separator className='my-2' />
           {/* The picker is the navigation too: each button routes to /theme/:id. */}
           <ThemePicker />

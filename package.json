@@ -1,7 +1,14 @@
 {
   "name": "view-transition-lab",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.5.0",
+  "description": "The same theme switch implemented N times behind one interface, to compare View Transitions API engines and modes honestly.",
+  "author": "ReinTristan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReinTristan/view-transition-lab.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +17,8 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "pnpm biome check --write",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve -s dist -l ${PORT:-3000}"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -40,7 +48,7 @@
     "react-resizable-panels": "^4.12.2",
     "react-router": "^8.3.0",
     "recharts": "3.8.0",
-    "shadcn": "^4.18.0",
+    "serve": "^14.2.6",
     "tailwind-animations": "^1.0.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
@@ -64,6 +72,7 @@
     "@vtbag/inspection-chamber": "^1.0.24",
     "babel-plugin-react-compiler": "^1.0.0",
     "playwright": "^1.62.1",
+    "shadcn": "^4.18.0",
     "typescript": "7.0.2",
     "vite": "^8.2.0",
     "vitest": "^4.1.11",

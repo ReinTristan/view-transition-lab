@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { AppShell } from '@/components/layout/app-shell'
 import { HubRoute } from '@/routes/hub'
 import { ThemeRoute } from '@/routes/theme-route'
@@ -18,6 +18,10 @@ function App() {
           <Route index element={<HubRoute />} />
           <Route path='theme/:themeId' element={<ThemeRoute />} />
         </Route>
+        {/* Same answer theme-route gives an unknown themeId: anything that does
+            not resolve goes to the hub. Without it an unmatched URL matches no
+            route at all and renders an empty body. */}
+        <Route path='*' element={<Navigate to='/' replace />} />
       </Routes>
     </BrowserRouter>
   )

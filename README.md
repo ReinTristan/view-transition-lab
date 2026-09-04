@@ -30,7 +30,7 @@ same engine can implement more than one:
 |---|---|
 | `native` | Declarative CSS animation on `::view-transition-new(root)`. No library involved. |
 | `bridge` | The browser takes the snapshots; a JS library drives the progress by writing `--vt-progress` on `:root`. |
-| `overlay` | No View Transitions API at all: a real element animated by the library, with the theme swap happening midway through. |
+| `overlay` | No View Transitions API at all: a real element animated by the library, with the theme swap happening midway through. **Not implemented yet** — it arrives with GSAP and Anime.js. |
 
 **Engines** — who runs the animation:
 
@@ -68,18 +68,43 @@ Engines are loaded lazily, so the bundle weight the lab measures is real.
   API, instead a real element is animated. Having it side by side makes a good point for comparing the cost
   and the benefit of the API visible rather than assume.
 
+## Testing
+
+Vitest in **browser mode** — Playwright provider, Chromium headless. jsdom would be useless here:
+`startViewTransition` does not exist in it, `::view-transition-*` pseudo-elements are not DOM
+nodes, and half of what the suite asserts is computed style out of a real cascade with Tailwind
+compiled for real.
+
+118 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
+themes, the orchestrator and the controls. `document.getAnimations()` filtered by
+`effect.pseudoElement` is the only window into the pseudo-elements, and it is how the `bridge`
+keepalive is actually tested rather than assumed.
+
+The piece worth knowing about is the **engine conformance suite**. It enumerates
+`engineList.filter((engine) => engine.ready)`, so GSAP, Tailwind and Anime.js enrol themselves the
+day their loader lands — no test to write. Every engine has to prove the same five things: it
+skips the API under reduced motion, it still swaps the theme in a browser with no View Transitions
+API, it leaves no `--vt-*` behind, it lasts roughly as long as it was told to, and it animates the
+root pseudo-element in its declared mode.
+
+Tests live in `test/` at the root with their own `tsconfig.test.json`, referenced from the
+solution file — so `pnpm build` typechecks them too and a broken test breaks the build.
+
 ## Stack
 
 React 19 · TypeScript 7 · Vite · Tailwind v4 · shadcn/ui (on Base UI) · React Router · Motion ·
-Biome · oxlint
+Zustand · Biome · Vitest
 
 ## Development
 
 ```sh
 pnpm install
-pnpm dev        # http://localhost:5173
+pnpm dev            # http://localhost:5173
 pnpm build
 pnpm lint
+pnpm test           # vitest in browser mode, watch
+pnpm test:run       # one pass
+pnpm test:coverage  # v8 report over the core
 ```
 
 Requires a browser with [View Transitions API support](https://caniuse.com/view-transitions).
