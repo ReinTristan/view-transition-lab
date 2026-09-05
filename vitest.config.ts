@@ -24,6 +24,7 @@ export default mergeConfig(
     optimizeDeps: {
       include: [
         'motion',
+        'gsap',
         'react',
         'react-dom',
         'react-dom/client',

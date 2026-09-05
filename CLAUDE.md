@@ -41,8 +41,9 @@ Tailwind compiled.
   `components/{controls,layout}`. `components/ui/` is excluded on purpose: 61 shadcn files inside
   the include would measure shadcn, not the lab.
 - **The engine conformance suite is the piece to know about.** `test/transitions/engines.test.ts`
-  enumerates `engineList.filter((e) => e.ready)`, so gsap, tailwind and anime enrol themselves
-  the day their loader lands — no test edit. `docs/testing.md` holds the contract.
+  enumerates `engineList.filter((e) => e.ready)`, so tailwind and anime enrol themselves the day
+  their loader lands — no test edit. Not a hope, either: `gsap` was added that way and passed the
+  whole bridge block on the first run. `docs/testing.md` holds the contract.
 - `document.getAnimations()` filtered by `effect.pseudoElement` is the only window into the
   view-transition pseudo-elements. That is how the bridge keepalive is actually tested.
 
@@ -58,8 +59,8 @@ implementations can be compared honestly. Three orthogonal axes:
   the snapshots, a JS library drives the progress), `overlay` (no VT API at all).
 
 Currently implemented: 7 themes (2 partially designed — `pastel` and `neobrutalism`, the
-furthest along but **not** finished — 5 are pendings with a minimum viable palette), and 2 engines
-(`native`, `motion`).
+furthest along but **not** finished — 5 are pendings with a minimum viable palette), and 3
+engines (`native`, `motion`, `gsap`).
 
 ## Architecture: the load-bearing decisions
 
@@ -132,12 +133,14 @@ lives in `src/styles/transitions.css` and is engine-agnostic:
 
 Every engine implements `TransitionEngine` (`src/transitions/types.ts`): animate a scalar from
 0 to 1 and write it with `setProgress()` from `src/transitions/dom.ts`. `motion.ts` is the
-reference implementation for bridge mode.
+reference implementation for bridge mode, and `gsap.ts` is deliberately its twin: same shape,
+same curve (`power4.out` is GSAP's spelling of Motion's `cubic-bezier(0.22, 1, 0.36, 1)`), so
+the only variable left between them is who runs the frames.
 
 Engines are **dynamically imported** from `src/transitions/index.ts` so the bundle weight the
-lab measures is real (`native` is 0.26 kB, `motion` 61.49 kB). `runTransition()` also holds an
-anti-overlap lock — a second theme change while a transition is live would make the browser
-abort the first one and flicker.
+lab measures is real (`native` is 0.21 kB, `motion` 61.44 kB, `gsap` 69.95 kB).
+`runTransition()` also holds an anti-overlap lock — a second theme change while a transition is
+live would make the browser abort the first one and flicker.
 
 Note the import direction between the two directories: `themes/use-theme-store.ts` imports
 `transitions/types` (a leaf module with no imports of its own) while `transitions/index.ts`
@@ -280,7 +283,7 @@ direction of the lab.
   pendings), each theme's design direction, and **the specific obstacles that theme faces against
   the base system**. This is the input to the individual plan.
 - `docs/testing.md` — the testing strategy and the executable contract every pending engine has
-  to satisfy. Read it before implementing gsap, tailwind or anime.
+  to satisfy. Read it before implementing tailwind or anime.
 - `docs/media.md` — how `public/og.png` and `media/demo.gif` are regenerated with Playwright and
   ffmpeg. Both are captures of the real app, so **a theme redesign or a change to the control bar
   makes them lie** — read it whenever that happens, before shipping the change.

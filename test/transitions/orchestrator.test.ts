@@ -115,12 +115,12 @@ describe('an engine with no loader', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
       /* silenced: the warning is the assertion, not noise */
     })
-    store().setEngine('gsap')
+    store().setEngine('tailwind')
 
     await runTransition('glass', CENTRE)
 
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('no loader for "gsap"')
+      expect.stringContaining('no loader for "tailwind"')
     )
     // The picker must stop announcing an engine that is not the one running.
     expect(store().engine).toBe('native')

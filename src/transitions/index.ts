@@ -13,6 +13,7 @@ import { DEFAULT_ENGINE } from './types'
 const loaders = {
   native: () => import('./native').then((m) => m.nativeEngine),
   motion: () => import('./motion').then((m) => m.motionEngine),
+  gsap: () => import('./gsap').then((m) => m.gsapEngine),
 } satisfies Partial<Record<EngineId, () => Promise<TransitionEngine>>>
 
 function hasLoader(id: EngineId): id is keyof typeof loaders {
@@ -55,7 +56,8 @@ export const engineList: EngineMeta[] = [
   {
     id: 'gsap',
     label: 'GSAP',
-    blurb: 'Bridge and overlay with Flip, the FLIP philosophy made explicit.',
+    blurb:
+      "Bridge: GSAP's ticker drives --vt-progress. Flip arrives with overlay.",
     modes: ['bridge', 'overlay'],
     ready: hasLoader('gsap'),
   },
