@@ -36,26 +36,37 @@ same engine can implement more than one:
 |---|---|
 | `native` | Declarative CSS animation on `::view-transition-new(root)`. No library involved. |
 | `bridge` | The browser takes the snapshots; a JS library drives the progress by writing `--vt-progress` on `:root`. |
-| `overlay` | No View Transitions API at all: a real element animated by the library, with the theme swap happening midway through. **Not implemented yet** — it arrives with GSAP and Anime.js. |
+| `overlay` | No View Transitions API at all: a real element animated by the library, with the theme swap happening midway through. **Not implemented yet** — it'll arrive soon. |
 
 **Engines** — who runs the animation:
 
 ***Current***
 
-| engine | modes | notes |
-|---|---|---|
-| Native | `native` | Native with without libraries. |
-| Motion | `bridge` | The reference implementation of the bridge. |
+| engine | modes | chunk | notes |
+|---|---|---|---|
+| Native | `native` | 0.21 kB | No library at all. The animation is CSS on the pseudo-element. |
+| Anime.js | `bridge` | 30.45 kB | One `requestAnimationFrame` loop shared by every animation on the page. |
+| Motion | `bridge` | 61.44 kB | The reference implementation of the bridge. |
+| GSAP | `bridge` | 69.95 kB | Its own ticker. Flip lands with the overlay mode. |
 
-Engines are loaded lazily, so the bundle weight the lab measures is real.
+Engines are loaded lazily, so the bundle weight the lab measures is real — and that column is
+already a finding rather than trivia. The three bridge engines do the identical job: animate one
+scalar from 0 to 1 on the same curve, write it to `--vt-progress`, let the same `clip-path`
+consume it. Driven through the real UI they are indistinguishable, frame for frame. Anime.js
+costs half of Motion and under half of GSAP for that same result.
+
+The curve is held constant on purpose, each library spelling it its own way — Motion's
+`cubic-bezier(0.22, 1, 0.36, 1)`, GSAP's `power4.out`, Anime's `outQuint`. If two engines looked
+different, something would be broken rather than interesting.
 
 ***Upcoming***
 
 | engine | modes | notes |
 |---|---|---|
-| GSAP | `bridge`, `overlay` | Flip **is** the overlay philosophy — it is where that mode pays off most. |
-| Anime.js | `bridge`, `overlay` | The one picked to show the overlay mode in its rawest form. |
-| Tailwind | `native` | Declarative through Tailwind; varies between plugins. |
+| Tailwind | `native` | Declarative through Tailwind, across five sub-engines; varies between plugins. |
+
+GSAP and Anime.js also declare `overlay`, which arrives with the mode axis — there is no `mode`
+selector in the store yet, so there would be nothing to pick it with.
 
 
 ## Methodology
@@ -81,14 +92,15 @@ Vitest in **browser mode** — Playwright provider, Chromium headless. jsdom wou
 nodes, and half of what the suite asserts is computed style out of a real cascade with Tailwind
 compiled for real.
 
-118 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
+146 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
 themes, the orchestrator and the controls. `document.getAnimations()` filtered by
 `effect.pseudoElement` is the only window into the pseudo-elements, and it is how the `bridge`
 keepalive is actually tested rather than assumed.
 
 The piece worth knowing about is the **engine conformance suite**. It enumerates
-`engineList.filter((engine) => engine.ready)`, so GSAP, Tailwind and Anime.js enrol themselves the
-day their loader lands — no test to write. Every engine has to prove the same five things: it
+`engineList.filter((engine) => engine.ready)`, so an engine enrols itself the day its loader lands
+— no test to write. Not a hope, either: GSAP and Anime.js were both added that way and each passed
+the whole bridge block on the first run. Only Tailwind is left to walk through it. Every engine has to prove the same five things: it
 skips the API under reduced motion, it still swaps the theme in a browser with no View Transitions
 API, it leaves no `--vt-*` behind, it lasts roughly as long as it was told to, and it animates the
 root pseudo-element in its declared mode.
@@ -99,7 +111,7 @@ solution file — so `pnpm build` typechecks them too and a broken test breaks t
 ## Stack
 
 React 19 · TypeScript 7 · Vite · Tailwind v4 · shadcn/ui (on Base UI) · React Router · Motion ·
-Zustand · Biome · Vitest
+GSAP · Anime.js · Zustand · Biome · Vitest
 
 ## Development
 
