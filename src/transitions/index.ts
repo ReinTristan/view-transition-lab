@@ -14,6 +14,7 @@ const loaders = {
   native: () => import('./native').then((m) => m.nativeEngine),
   motion: () => import('./motion').then((m) => m.motionEngine),
   gsap: () => import('./gsap').then((m) => m.gsapEngine),
+  anime: () => import('./anime').then((m) => m.animeEngine),
 } satisfies Partial<Record<EngineId, () => Promise<TransitionEngine>>>
 
 function hasLoader(id: EngineId): id is keyof typeof loaders {
@@ -72,7 +73,8 @@ export const engineList: EngineMeta[] = [
   {
     id: 'anime',
     label: 'anime.js',
-    blurb: 'Bridge and overlay, the rawest contrast between mechanisms.',
+    blurb:
+      "Bridge: anime.js's shared rAF loop drives --vt-progress. Overlay comes later.",
     modes: ['bridge', 'overlay'],
     ready: hasLoader('anime'),
   },

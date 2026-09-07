@@ -25,6 +25,7 @@ export default mergeConfig(
       include: [
         'motion',
         'gsap',
+        'animejs',
         'react',
         'react-dom',
         'react-dom/client',
