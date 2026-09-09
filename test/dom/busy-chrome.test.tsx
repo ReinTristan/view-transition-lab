@@ -63,4 +63,31 @@ describe('the chrome while a wipe runs', () => {
 
     expect(getComputedStyle(document.documentElement).cursor).toBe('progress')
   })
+
+  // The ::view-transition-* pseudo-elements cover the page, not the browser's
+  // own scrollbar, so a themed scrollbar would snap straight to the new colour
+  // while everything else is still being wiped across.
+  test('the scrollbar goes invisible', async () => {
+    expect(getComputedStyle(document.documentElement).scrollbarColor).not.toBe(
+      'rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)'
+    )
+
+    document.documentElement.dataset.vtRunning = ''
+    expect(getComputedStyle(document.documentElement).scrollbarColor).toBe(
+      'rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)'
+    )
+  })
+
+  // Hidden, not switched off. scrollbar-color leaves the geometry alone, so the
+  // bar keeps every pixel of its layout and the page keeps scrolling by wheel
+  // and by keyboard. `scrollbar-width: none` would take it out of the layout
+  // and the page would jump sideways mid-wipe — this is the guard against
+  // someone reaching for it.
+  test('and keeps its width, so nothing shifts', async () => {
+    document.documentElement.dataset.vtRunning = ''
+
+    expect(getComputedStyle(document.documentElement).scrollbarWidth).toBe(
+      'auto'
+    )
+  })
 })

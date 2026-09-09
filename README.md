@@ -93,7 +93,7 @@ Vitest in **browser mode** — Playwright provider, Chromium headless. jsdom wou
 nodes, and half of what the suite asserts is computed style out of a real cascade with Tailwind
 compiled for real.
 
-165 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
+176 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
 themes, the orchestrator and the controls. `document.getAnimations()` filtered by
 `effect.pseudoElement` is the only window into the pseudo-elements, and it is how the `bridge`
 keepalive is actually tested rather than assumed.

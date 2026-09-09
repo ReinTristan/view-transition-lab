@@ -46,7 +46,39 @@ export function ControlSelect({
       <Label htmlFor={id} className='text-muted-foreground text-xs'>
         {label}
       </Label>
-      <Select value={value} onValueChange={(next) => onChange(String(next))}>
+      {/* These two props are the whole of the scrollbar bug, and it takes both
+          of them — the lock has two independent triggers.
+
+          Base UI locks page scroll while a select list is open, and the
+          condition is `(alignItemWithTriggerActive || modal) && open`
+          (select/positioner/SelectPositioner.js). modal ships as true, and
+          alignItemWithTrigger — the native-select behaviour where the popup
+          overlays the trigger with the current item on top of it — ships as
+          true as well and locks on its own account, which is why turning off
+          only modal changes nothing.
+
+          What the lock does: <body> gets an inline overflow:hidden and, on a
+          browser with classic scrollbars, <html> gets a scrollbar-gutter:stable
+          to pay back the 15px. The page bar disappears and its reserved groove
+          stays painted where it was, which reads as a second, dead scrollbar.
+
+          The popover was never the culprit, which is the part that costs an
+          afternoon to rediscover: Popover.Root defaults to modal={false} and
+          writes nothing to the document at all.
+
+          It is also not fixable from CSS. Base UI writes inline styles, so
+          there is no `[data-scroll-locked]` hook of the kind react-remove-scroll
+          (Radix) gives you. The props are the only lever.
+
+          Nothing here wants either behaviour: three to five short entries
+          inside a popover that already dismisses itself. Dropping the trigger
+          alignment also turns anchor tracking back on, so the list follows the
+          trigger instead of needing the page pinned. */}
+      <Select
+        modal={false}
+        value={value}
+        onValueChange={(next) => onChange(String(next))}
+      >
         <SelectTrigger id={id} size='sm' className='w-full'>
           {/* SelectValue renders the raw value unless it is handed a formatter,
               so the trigger would print the id. The list feeding the popup is
@@ -57,7 +89,7 @@ export function ControlSelect({
             }
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent alignItemWithTrigger={false}>
           {choices.map((choice) => (
             <SelectItem
               key={choice.id}

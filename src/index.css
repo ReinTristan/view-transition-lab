@@ -143,6 +143,38 @@
     --surface-shadow: none;
     --surface-gloss: none;
     --glow: none;
+
+    /* The scrollbar is the one piece of chrome the themes did not own, so it
+       stayed grey while all seven changed everything around it.
+
+       The default derives from two tokens every theme already declares, so all
+       seven get a matching scrollbar without a single theme file being touched;
+       a theme that wants a louder one overrides these instead. Themes declare
+       the tokens and never `scrollbar-color` itself — the busy-state rule in
+       transitions.css has to be able to outrank them for the duration of a
+       wipe, and both live outside any layer.
+
+       The track is --background and NOT transparent, which was the first
+       attempt and looked obviously right: body paints --surface-bg, so letting
+       it show through ought to put the page's own backdrop behind the bar. It
+       does not. The scrollbar strip falls outside the background positioning
+       area, and only the *solid colour* layers of a background reach into it —
+       gradient layers never do, with `fixed` or with `scroll`. So the four
+       themes whose --surface-bg is gradient-only (pastel, frutiger, y2k, glass)
+       got a white track, and cyberpunk — gradients over a solid last layer —
+       got that solid, close enough to disguise it but still not what the page
+       shows beside it.
+
+       --background is the honest answer: a flat colour out of the theme's own
+       palette, identical to what already paints in anthropic, neobrutalism and
+       cyberpunk, and the gradient's first stop in pastel. */
+    --scrollbar-thumb: color-mix(
+      in oklab,
+      var(--foreground) 28%,
+      var(--background)
+    );
+    --scrollbar-track: var(--background);
+    --scrollbar-w: auto;
   }
 }
 
@@ -164,7 +196,18 @@
     background-attachment: fixed;
     @apply text-foreground;
   }
+  /* Kept outside the block: the formatter reorders the declarations inside one
+     and drops any comment left between them, so this would not survive in
+     there.
+
+     scrollbar-color is an inherited property, so declaring it once here also
+     colours every nested scroller — the select popup, the scroll areas — with
+     no second rule. scrollbar-width is not inherited, so that one stays on the
+     page scrollbar, which is what we want: a theme sizing its own bar should
+     not resize the popups too. */
   html {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: var(--scrollbar-w);
     @apply font-sans;
   }
 }

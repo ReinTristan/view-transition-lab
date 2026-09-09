@@ -201,6 +201,12 @@ there are load-bearing:
   ends up split down the middle by the wipe's edge.
 - **The cursor goes on `:root`, not on the controls.** The cursor follows the hit-tested element,
   and per the above that is the root.
+- **The scrollbar is painted transparent for the duration.** It is not covered by the
+  `::view-transition-*` pseudo-elements, so a themed one would snap to the new colour while
+  everything else is still being wiped across. Hidden, not switched off: `scrollbar-color`
+  leaves the geometry alone, so the bar keeps its layout and the page keeps scrolling by wheel
+  and by keyboard. `scrollbar-width: none` would take it out of the layout and the page would
+  jump sideways mid-wipe.
 
 It is `aria-busy` and not `aria-disabled`: nothing sets `pointer-events`, and the controls are
 not disabled — the browser is simply not routing anything to them for those few hundred ms.
@@ -236,6 +242,15 @@ aesthetics, so there is a second layer every theme must define — `--surface-bg
 `--surface-blur`, `--surface-border-w`, `--surface-shadow`, `--surface-gloss`, `--glow`,
 `--overlay-bg`, `--overlay-blur`. `styles/themes/slots.css` applies them via `[data-slot]`
 selectors, theme-agnostically.
+
+Three more sit alongside it and behave the opposite way: `--scrollbar-thumb`,
+`--scrollbar-track` and `--scrollbar-w`. The scrollbar was the one piece of chrome no theme
+owned, so it stayed grey while the seven changed everything around it. **No theme is required
+to declare these** — the default in `index.css` derives the thumb from `--foreground` and
+`--background`, so all seven get a matching bar for free and a theme only writes its own when
+it wants something louder. A theme declares the **tokens** and never `scrollbar-color` itself:
+the busy-state rule has to outrank it for the duration of a wipe, and both live outside any
+layer.
 
 Two traps that `slots.css` already solves — don't reintroduce them:
 

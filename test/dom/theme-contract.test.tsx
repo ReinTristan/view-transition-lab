@@ -101,3 +101,35 @@ describe('the theme decides lightness, never the system', () => {
     expect(light).not.toBe(dark)
   })
 })
+
+/**
+ * The scrollbar was the one piece of chrome no theme owned, so it stayed grey
+ * while all seven changed everything around it.
+ *
+ * Deliberately NOT part of SURFACE_CONTRACT above: no theme declares these. The
+ * default in index.css derives them from --foreground and --background, so all
+ * seven get a matching bar for free and a theme only writes its own when it
+ * wants something louder. Which is also why these assert the *computed*
+ * property and not the token: unregistered custom properties compute to their
+ * substitution value, so every theme would read back the same color-mix() text.
+ */
+describe('the scrollbar follows the theme', () => {
+  test.each(themeList.map((theme) => theme.id))('%s colours its own', (id) => {
+    applyTheme(id)
+    const style = getComputedStyle(document.documentElement)
+
+    expect(style.scrollbarColor).not.toBe('auto')
+    expect(style.scrollbarWidth).toBe('auto')
+  })
+
+  // The proof the derivation is real and not a shared grey: the lightest theme
+  // and the only dark one cannot land on the same thumb.
+  test('two opposite themes do not land on the same colour', () => {
+    applyTheme('pastel')
+    const light = getComputedStyle(document.documentElement).scrollbarColor
+    applyTheme('cyberpunk')
+    const dark = getComputedStyle(document.documentElement).scrollbarColor
+
+    expect(light).not.toBe(dark)
+  })
+})

@@ -102,6 +102,27 @@
   cursor: progress;
 }
 
+/* The scrollbar is not inside the wipe. The ::view-transition-* pseudo-elements
+ * cover the page, not the browser's own scrollbar, so a themed scrollbar would
+ * snap straight to the new colour while everything else is still being wiped
+ * across. Painting it transparent for the duration hides that, and the bar
+ * comes back already in the new theme.
+ *
+ * Hidden, NOT switched off. scrollbar-color does not touch geometry: the bar
+ * keeps every pixel of its layout and the page keeps scrolling by wheel and by
+ * keyboard the whole time. `scrollbar-width: none` would do the opposite — it
+ * takes the bar out of the layout, so the page would jump sideways mid-wipe,
+ * which is the exact bug this file is trying not to have.
+ *
+ * html[…] and not [data-vt-running] alone, for the cascade: this beats the
+ * html rule in index.css by being unlayered, but the theme files are unlayered
+ * too and are imported after this one, so a theme declaring scrollbar-color
+ * directly would win on source order. The contract says themes only declare the
+ * tokens; the extra specificity is what makes it hold even if someone forgets. */
+html[data-vt-running] {
+  scrollbar-color: transparent transparent;
+}
+
 [data-vt-running]
   .app-chrome
   :is(
