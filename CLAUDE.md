@@ -32,6 +32,11 @@ Tailwind compiled.
 - Tests live in **`test/` at the root**, not next to the sources, with their own
   `tsconfig.test.json` referenced from the solution file. So `pnpm build` typechecks them too —
   a broken test breaks the build. `vitest.config.ts` is referenced from `tsconfig.node.json`.
+- **Adding or removing a test makes `README.md` lie, and it is on you to fix it in the same
+  commit.** Its Testing section opens with a hardcoded count — "176 tests over the store, …" —
+  and that is the **only** count anywhere in the repo or in `docs/`. Take the new number from the
+  `pnpm test:run` summary rather than counting by hand or guessing the delta. Nothing checks
+  this, which is exactly why it is written down.
 - `vitest.config.ts` is separate and `mergeConfig`s `vite.config.ts`, because the tests need the
   very same pipeline the app gets (the `@` alias, and Tailwind compiling the themes for real).
 - **`optimizeDeps.include` there is load-bearing.** The engines are dynamic imports, so Vite
