@@ -1,97 +1,49 @@
 import type { ThemeId } from '@/themes/registry'
 import { getDuration, useThemeStore } from '@/themes/use-theme-store'
 import { prefersReducedMotion } from './dom'
-import type { EngineId, TransitionEngine, TransitionMode } from './types'
+import {
+  engineLoader,
+  engineMeta,
+  fallbackLoader,
+  reconcileMode,
+} from './registry'
+import type { EngineId, TransitionMode } from './types'
 import { DEFAULT_ENGINE } from './types'
 
 /**
- * Lazy loading per engine: this way the weight the lab measures is real, and
- * not an average of having all five libraries in the initial bundle.
+ * Resolves the engine+mode pair to something that actually runs.
  *
- * Declared before engineList because the list derives `ready` from it.
- */
-const loaders = {
-  native: () => import('./native').then((m) => m.nativeEngine),
-  motion: () => import('./motion').then((m) => m.motionEngine),
-  gsap: () => import('./gsap').then((m) => m.gsapEngine),
-  anime: () => import('./anime').then((m) => m.animeEngine),
-} satisfies Partial<Record<EngineId, () => Promise<TransitionEngine>>>
-
-function hasLoader(id: EngineId): id is keyof typeof loaders {
-  return id in loaders
-}
-
-export interface EngineMeta {
-  id: EngineId
-  label: string
-  blurb: string
-  modes: TransitionMode[]
-  /** false while the engine is not implemented yet (lands in its own phase). */
-  ready: boolean
-}
-
-/**
- * The single source of truth for what the UI says about an engine. The engine
- * modules themselves carry no metadata on purpose — see TransitionEngine.
+ * Falling back quietly is the one thing this lab must not do: the picker would
+ * keep saying GSAP while native ran, and the bundle figures it reports would be
+ * measuring something else entirely. Correcting the selection makes the UI catch
+ * up with what actually executes.
  *
- * `ready` is derived from `loaders`, never written by hand: an engine cannot
- * advertise itself as implemented without something to load it with.
+ * Two ways to miss: an engine with no loaders at all (tailwind today), and an
+ * engine that has loaders but not for the mode asked. The store reconciles the
+ * mode on every setEngine, so the second one is only reachable from a
+ * hand-edited persisted blob — which is exactly the case worth warning about.
  */
-export const engineList: EngineMeta[] = [
-  {
-    id: 'native',
-    label: 'Native',
-    blurb:
-      'The browser does it all. The animation is CSS on the pseudo-element.',
-    modes: ['native'],
-    ready: hasLoader('native'),
-  },
-  {
-    id: 'motion',
-    label: 'Motion',
-    blurb:
-      'Bridge: Motion drives --vt-progress and the browser takes the snapshots.',
-    modes: ['bridge', 'overlay'],
-    ready: hasLoader('motion'),
-  },
-  {
-    id: 'gsap',
-    label: 'GSAP',
-    blurb:
-      "Bridge: GSAP's ticker drives --vt-progress. Flip arrives with overlay.",
-    modes: ['bridge', 'overlay'],
-    ready: hasLoader('gsap'),
-  },
-  {
-    id: 'tailwind',
-    label: 'Tailwind',
-    blurb:
-      'CSS only, with sub-engines: tw-animate-css, animated, animations, motion and bare.',
-    modes: ['native'],
-    ready: hasLoader('tailwind'),
-  },
-  {
-    id: 'anime',
-    label: 'anime.js',
-    blurb:
-      "Bridge: anime.js's shared rAF loop drives --vt-progress. Overlay comes later.",
-    modes: ['bridge', 'overlay'],
-    ready: hasLoader('anime'),
-  },
-]
+function loaderFor(id: EngineId, mode: TransitionMode) {
+  const wanted = engineLoader(id, mode)
+  if (wanted) return wanted
 
-function loaderFor(id: EngineId) {
-  if (hasLoader(id)) return loaders[id]
+  const store = useThemeStore.getState()
+  const meta = engineMeta(id)
 
-  // Falling back quietly is the one thing this lab must not do: the picker
-  // would keep saying GSAP while native ran, and the bundle figures it reports
-  // would be measuring something else entirely. Correcting the selection makes
-  // the UI catch up with what actually executes.
+  if (!meta.ready) {
+    console.warn(
+      `[transitions] no loader for "${id}" yet - falling back to native.`
+    )
+    store.setEngine(DEFAULT_ENGINE)
+    return fallbackLoader
+  }
+
+  const corrected = reconcileMode(id, mode)
   console.warn(
-    `[transitions] no loader for "${id}" yet - falling back to native.`
+    `[transitions] no "${mode}" loader for "${id}" yet - falling back to ${corrected}.`
   )
-  useThemeStore.getState().setEngine(DEFAULT_ENGINE)
-  return loaders.native
+  store.setMode(corrected)
+  return engineLoader(id, corrected) ?? fallbackLoader
 }
 
 /**
@@ -124,7 +76,7 @@ export async function runTransition(
   store.setRunning(true)
 
   try {
-    const engine = await loaderFor(store.engine)()
+    const engine = await loaderFor(store.engine, store.mode)()
     await engine.run(
       () => {
         // setTheme writes the attributes synchronously before it touches the
@@ -153,5 +105,27 @@ export async function runTransition(
   }
 }
 
-export type { EngineId, TransitionEngine, TransitionMode } from './types'
-export { DEFAULT_ENGINE, ENGINE_IDS, isEngineId } from './types'
+export type {
+  EngineMeta,
+  EngineOption,
+  EngineOptionChoice,
+} from './registry'
+export {
+  engineList,
+  engineMeta,
+  reconcileMode,
+  reconcileOption,
+} from './registry'
+export type {
+  EngineId,
+  TransitionEngine,
+  TransitionMode,
+} from './types'
+export {
+  DEFAULT_ENGINE,
+  DEFAULT_MODE,
+  ENGINE_IDS,
+  isEngineId,
+  isTransitionMode,
+  TRANSITION_MODES,
+} from './types'

@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { DEFAULT_ENGINE, type EngineId, isEngineId } from '@/transitions/types'
+import { reconcileMode, reconcileOption } from '@/transitions/registry'
+import {
+  DEFAULT_ENGINE,
+  DEFAULT_MODE,
+  type EngineId,
+  isEngineId,
+  isTransitionMode,
+  type TransitionMode,
+} from '@/transitions/types'
 import { paintFavicon } from './favicon'
 import type { ThemeId } from './registry'
 import { DEFAULT_THEME, isThemeId, themes } from './registry'
@@ -79,6 +87,18 @@ export interface PendingRun {
 interface ThemeState {
   theme: ThemeId
   engine: EngineId
+  /**
+   * How the selected engine produces the wipe. Not every engine does every
+   * mode, so this is never set on its own: setEngine reconciles it, and so does
+   * whatever comes back from disk.
+   */
+  mode: TransitionMode
+  /**
+   * The choice picked for each engine's own extra axis — tailwind's sub-engine
+   * today. Keyed by engine so leaving tailwind and coming back does not forget
+   * which variant was being looked at.
+   */
+  engineOptions: Partial<Record<EngineId, string>>
   speed: number
   /**
    * The theme `/` returns to. NOT a second copy of the active theme: it answers
@@ -93,6 +113,8 @@ interface ThemeState {
 
   setTheme: (id: ThemeId) => void
   setEngine: (id: EngineId) => void
+  setMode: (mode: TransitionMode) => void
+  setEngineOption: (id: EngineId, choice: string) => void
   setSpeed: (value: number) => void
   setHubTheme: (id: ThemeId) => void
   setRunning: (value: boolean) => void
@@ -102,7 +124,7 @@ interface ThemeState {
 /** The persisted slice: state minus the actions and minus the lock. */
 type PersistedState = Pick<
   ThemeState,
-  'theme' | 'engine' | 'speed' | 'hubTheme'
+  'theme' | 'engine' | 'mode' | 'engineOptions' | 'speed' | 'hubTheme'
 >
 
 /**
@@ -119,14 +141,39 @@ function mergePersisted(persisted: unknown, current: ThemeState): ThemeState {
   if (typeof persisted !== 'object' || persisted === null) return current
   const saved = persisted as Partial<Record<keyof PersistedState, unknown>>
 
+  // The engine is settled first: a valid mode is only valid *for an engine*, so
+  // reconciling against the one still on screen would sanitise it against the
+  // wrong side of the pair.
+  const engine = isEngineId(saved.engine) ? saved.engine : current.engine
+  const mode = isTransitionMode(saved.mode) ? saved.mode : current.mode
+
   return {
     ...current,
     theme: isThemeId(saved.theme) ? saved.theme : current.theme,
-    engine: isEngineId(saved.engine) ? saved.engine : current.engine,
+    engine,
+    mode: reconcileMode(engine, mode),
+    engineOptions: mergeEngineOptions(saved.engineOptions),
     speed:
       typeof saved.speed === 'number' ? clampSpeed(saved.speed) : current.speed,
     hubTheme: isThemeId(saved.hubTheme) ? saved.hubTheme : null,
   }
+}
+
+/**
+ * Same field-by-field policy one level down: an unknown engine key is dropped
+ * and an unknown choice falls back to that engine's first one, rather than the
+ * whole map being thrown away because one entry rotted.
+ */
+function mergeEngineOptions(saved: unknown): Partial<Record<EngineId, string>> {
+  if (typeof saved !== 'object' || saved === null) return {}
+  const clean: Partial<Record<EngineId, string>> = {}
+
+  for (const [id, choice] of Object.entries(saved)) {
+    if (!isEngineId(id)) continue
+    const valid = reconcileOption(id, choice)
+    if (valid) clean[id] = valid
+  }
+  return clean
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -134,6 +181,8 @@ export const useThemeStore = create<ThemeState>()(
     (set) => ({
       theme: DEFAULT_THEME,
       engine: DEFAULT_ENGINE,
+      mode: DEFAULT_MODE,
+      engineOptions: {},
       speed: DEFAULT_SPEED,
       hubTheme: null,
       running: false,
@@ -144,7 +193,19 @@ export const useThemeStore = create<ThemeState>()(
         paintTheme(id)
         set({ theme: id })
       },
-      setEngine: (id) => set({ engine: id }),
+      // The mode travels with the engine: not every engine does every mode, so
+      // leaving the old one selected would build a pair nothing can run. Same
+      // policy as loaderFor's, only early enough that nothing has to warn.
+      setEngine: (id) =>
+        set((state) => ({ engine: id, mode: reconcileMode(id, state.mode) })),
+      setMode: (mode) =>
+        set((state) => ({ mode: reconcileMode(state.engine, mode) })),
+      setEngineOption: (id, choice) =>
+        set((state) => {
+          const valid = reconcileOption(id, choice)
+          if (!valid) return state
+          return { engineOptions: { ...state.engineOptions, [id]: valid } }
+        }),
       setSpeed: (value) => set({ speed: clampSpeed(value) }),
       setHubTheme: (id) => set({ hubTheme: id }),
       // Paints the attribute before touching the store — see paintRunning.
@@ -163,6 +224,8 @@ export const useThemeStore = create<ThemeState>()(
       partialize: (state): PersistedState => ({
         theme: state.theme,
         engine: state.engine,
+        mode: state.mode,
+        engineOptions: state.engineOptions,
         speed: state.speed,
         hubTheme: state.hubTheme,
       }),
@@ -203,6 +266,18 @@ export function useThemeId(): ThemeId {
 
 export function useEngineId(): EngineId {
   return useThemeStore((state) => state.engine)
+}
+
+export function useMode(): TransitionMode {
+  return useThemeStore((state) => state.mode)
+}
+
+/**
+ * The engine's selected option, or its first choice when nothing was picked
+ * yet. Null when the engine has no extra axis at all.
+ */
+export function useEngineOption(id: EngineId): string | null {
+  return useThemeStore((state) => reconcileOption(id, state.engineOptions[id]))
 }
 
 export function useSpeed(): number {

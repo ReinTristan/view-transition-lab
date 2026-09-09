@@ -48,6 +48,42 @@ describe('speed', () => {
   })
 })
 
+describe('the engine and mode pair', () => {
+  // Not every engine does every mode, so the mode cannot be set on its own.
+  // Correcting it here — rather than at loaderFor — means the picker never shows
+  // a pair that nothing can run.
+  test('setEngine drags the mode to one the engine can run', () => {
+    const store = () => useThemeStore.getState()
+
+    store().setEngine('motion')
+    expect(store().mode).toBe('bridge')
+
+    store().setEngine('native')
+    expect(store().mode).toBe('native')
+  })
+
+  test('setMode refuses a mode the current engine cannot run', () => {
+    const store = () => useThemeStore.getState()
+    store().setEngine('motion')
+
+    // overlay is declared by motion but has no module yet, so it is not
+    // selectable. The day it lands, this falls out on its own.
+    store().setMode('overlay')
+    expect(store().mode).toBe('bridge')
+  })
+
+  test('an engine option falls back to the first choice, not to nothing', () => {
+    const store = () => useThemeStore.getState()
+
+    store().setEngineOption('tailwind', 'not-a-variant')
+    expect(store().engineOptions.tailwind).toBe('bare')
+
+    // native declares no option axis at all: there is nothing to write.
+    store().setEngineOption('native', 'bare')
+    expect(store().engineOptions.native).toBeUndefined()
+  })
+})
+
 describe('persistence', () => {
   test('a bad field falls back on its own, without dropping the whole blob', async () => {
     await rehydrateFrom({
@@ -62,6 +98,34 @@ describe('persistence', () => {
     expect(state.engine).toBe('motion')
     expect(state.speed).toBe(1.5)
     expect(state.hubTheme).toBeNull()
+  })
+
+  test('a persisted mode is validated against its own engine', async () => {
+    // bridge is a real mode and native is a real engine — the pair is what is
+    // wrong, which is why isTransitionMode alone would let this through.
+    await rehydrateFrom({
+      theme: 'glass',
+      engine: 'native',
+      mode: 'bridge',
+      speed: 1,
+    })
+
+    const state = useThemeStore.getState()
+    expect(state.mode).toBe('native')
+    // The rest of the blob survives: one bad field does not cost the others.
+    expect(state.theme).toBe('glass')
+    expect(state.speed).toBe(1)
+  })
+
+  test('a rotten engine option is cleaned entry by entry', async () => {
+    await rehydrateFrom({
+      engine: 'native',
+      engineOptions: { tailwind: 'gone-from-the-list', 'not-an-engine': 'x' },
+    })
+
+    const { engineOptions } = useThemeStore.getState()
+    expect(engineOptions.tailwind).toBe('bare')
+    expect(Object.keys(engineOptions)).toEqual(['tailwind'])
   })
 
   test('a non-object blob leaves the current state alone', async () => {

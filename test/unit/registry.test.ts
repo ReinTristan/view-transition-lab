@@ -1,8 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import type { ThemeId } from '@/themes/registry'
 import { DEFAULT_THEME, isThemeId, themeList, themes } from '@/themes/registry'
-import { engineList } from '@/transitions'
-import { DEFAULT_ENGINE, ENGINE_IDS, isEngineId } from '@/transitions/types'
+import { engineList, engineMeta, reconcileMode } from '@/transitions'
+import {
+  DEFAULT_ENGINE,
+  DEFAULT_MODE,
+  ENGINE_IDS,
+  isEngineId,
+  isTransitionMode,
+  TRANSITION_MODES,
+} from '@/transitions/types'
 
 /**
  * The engine modules as Vite sees them — a record of lazy `import()`s, plus the
@@ -93,6 +100,54 @@ describe('engine registry', () => {
   test('every engine declares at least one mode', () => {
     for (const engine of engineList) {
       expect(engine.modes.length).toBeGreaterThan(0)
+    }
+  })
+
+  // modes is hand-written (what the engine is meant to do) and readyModes is
+  // derived from the loader table (what it can do today). This is what keeps the
+  // pair from drifting the way TransitionEngine's own copy once did.
+  test('readyModes is a subset of the modes declared', () => {
+    for (const engine of engineList) {
+      for (const mode of engine.readyModes) {
+        expect(engine.modes, `${engine.id} runs an undeclared mode`).toContain(
+          mode
+        )
+      }
+    }
+  })
+
+  test('ready is exactly "has at least one mode to run"', () => {
+    for (const engine of engineList) {
+      expect(engine.ready).toBe(engine.readyModes.length > 0)
+      for (const mode of engine.readyModes) {
+        expect(isTransitionMode(mode)).toBe(true)
+      }
+    }
+  })
+
+  // The default pair has to be runnable: it is what a first visit gets, and what
+  // every field-by-field fallback in the store lands on.
+  test('the default engine can run the default mode', () => {
+    expect(engineMeta(DEFAULT_ENGINE).readyModes).toContain(DEFAULT_MODE)
+  })
+
+  test.each(TRANSITION_MODES)(
+    'reconcileMode always answers with a mode the engine declares (%s)',
+    (mode) => {
+      for (const engine of engineList) {
+        expect(engine.modes).toContain(reconcileMode(engine.id, mode))
+      }
+    }
+  )
+
+  test('an engine option lists unique choices', () => {
+    for (const engine of engineList) {
+      if (!engine.options) continue
+      const ids = engine.options.choices.map((choice) => choice.id)
+      expect(new Set(ids).size, `${engine.id} repeats a choice id`).toBe(
+        ids.length
+      )
+      expect(ids.length).toBeGreaterThan(0)
     }
   })
 })

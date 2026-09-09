@@ -3,16 +3,17 @@ import { Showcase } from '@/components/showcase/showcase'
 import { themeList, themes } from '@/themes/registry'
 import {
   useEngineId,
+  useMode,
   useThemeId,
   useThemeStore,
 } from '@/themes/use-theme-store'
-import { engineList, runTransition } from '@/transitions'
+import { engineMeta, runTransition } from '@/transitions'
 
 export function HubRoute() {
   const themeId = useThemeId()
-  const engineId = useEngineId()
+  const engine = engineMeta(useEngineId())
+  const mode = useMode()
   const theme = themes[themeId]
-  const engine = engineList.find((item) => item.id === engineId)
   const done = themeList.filter((item) => item.status === 'done').length
 
   // The hub restores the theme you last swapped to here, so leaving to a theme
@@ -55,7 +56,7 @@ export function HubRoute() {
           <div>
             <dt className='text-muted-foreground'>Engine</dt>
             <dd className='font-medium'>
-              {engine?.label} · {engine?.modes.join(' / ')}
+              {engine.label} · {mode}
             </dd>
           </div>
           <div>

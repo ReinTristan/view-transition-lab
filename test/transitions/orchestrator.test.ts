@@ -110,6 +110,26 @@ describe('the mutation window', () => {
   })
 })
 
+describe('a mode with no loader', () => {
+  test('warns and corrects the mode instead of running another one', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
+      /* silenced: the warning is the assertion, not noise */
+    })
+    // setState and not setMode: the action reconciles, so the only way into
+    // this pair is a hand-edited blob — which is the case worth defending.
+    useThemeStore.setState({ engine: 'motion', mode: 'overlay' })
+
+    await runTransition('glass', CENTRE)
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('no "overlay" loader for "motion"')
+    )
+    expect(store().mode).toBe('bridge')
+    expect(store().engine).toBe('motion')
+    expect(document.documentElement.dataset.theme).toBe('glass')
+  })
+})
+
 describe('an engine with no loader', () => {
   test('warns and corrects the selection instead of degrading quietly', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {

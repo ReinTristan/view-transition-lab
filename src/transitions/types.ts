@@ -33,8 +33,23 @@ export function isEngineId(value: unknown): value is EngineId {
  *           property is the only bridge.
  * overlay — no View Transitions API. A real element animated by the library,
  *           with the theme swap happening mid-animation.
+ *
+ * Data and not just a union, for the same reason ENGINE_IDS is: the mode is a
+ * persisted axis now, so something has to guard what comes back from disk.
  */
-export type TransitionMode = 'native' | 'bridge' | 'overlay'
+export const TRANSITION_MODES = ['native', 'bridge', 'overlay'] as const
+
+export type TransitionMode = (typeof TRANSITION_MODES)[number]
+
+/** Fixed, and the mode DEFAULT_ENGINE implements. A test holds the pair. */
+export const DEFAULT_MODE: TransitionMode = 'native'
+
+export function isTransitionMode(value: unknown): value is TransitionMode {
+  return (
+    typeof value === 'string' &&
+    (TRANSITION_MODES as readonly string[]).includes(value)
+  )
+}
 
 export interface TransitionContext {
   /** Click point, origin of the wipe circle. */
@@ -46,10 +61,13 @@ export interface TransitionContext {
 
 /**
  * An engine is only `run`. It deliberately carries no id, label or modes: those
- * are EngineMeta's job in transitions/index.ts, and that list is what the UI
+ * are EngineMeta's job in transitions/registry.ts, and that list is what the UI
  * renders. Declaring them twice is what let motion.ts drift into claiming a
  * different set of modes than the picker showed, with nothing reading the copy
  * that was wrong.
+ *
+ * A module is one engine in one mode: `loaders` is keyed by both, so each module
+ * writes its own data-vt-mode literally and never has to branch on it.
  */
 export interface TransitionEngine {
   /**
