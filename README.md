@@ -65,8 +65,9 @@ different, something would be broken rather than interesting.
 |---|---|---|
 | Tailwind | `native` | Declarative through Tailwind, across five sub-engines; varies between plugins. |
 
-GSAP and Anime.js also declare `overlay`, which arrives with the mode axis — there is no `mode`
-selector in the store yet, so there would be nothing to pick it with.
+GSAP and Anime.js also declare `overlay`. The `mode` selector now exists — it lives in the
+settings popover, next to the engine — but no engine ships an overlay module yet, so the option is
+listed there as pending rather than hidden.
 
 
 ## Methodology
@@ -92,7 +93,7 @@ Vitest in **browser mode** — Playwright provider, Chromium headless. jsdom wou
 nodes, and half of what the suite asserts is computed style out of a real cascade with Tailwind
 compiled for real.
 
-146 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
+165 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
 themes, the orchestrator and the controls. `document.getAnimations()` filtered by
 `effect.pseudoElement` is the only window into the pseudo-elements, and it is how the `bridge`
 keepalive is actually tested rather than assumed.

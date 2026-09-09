@@ -60,7 +60,8 @@ implementations can be compared honestly. Three orthogonal axes:
 
 Currently implemented: 7 themes (2 partially designed — `pastel` and `neobrutalism`, the
 furthest along but **not** finished — 5 are pendings with a minimum viable palette), and 4
-engines (`native`, `motion`, `gsap`, `anime`). Only `tailwind` is left.
+engines (`native`, `motion`, `gsap`, `anime`). Only `tailwind` is left. The `mode` axis is
+selectable and persisted, but `overlay` has no module yet, so it shows as pending everywhere.
 
 ## Architecture: the load-bearing decisions
 
@@ -138,16 +139,31 @@ twins: same shape, same curve — `power4.out` and `outQuint` are GSAP's and ani
 the quint-out that Motion's `cubic-bezier(0.22, 1, 0.36, 1)` approximates — so the only variable
 left between the three is who runs the frames.
 
-Engines are **dynamically imported** from `src/transitions/index.ts` so the bundle weight the
-lab measures is real (`native` is 0.21 kB, `anime` 30.45 kB, `motion` 61.44 kB, `gsap`
-69.95 kB — and that spread is a finding, not trivia: the three bridge engines are doing the
-identical job).
-`runTransition()` also holds an anti-overlap lock — a second theme change while a transition is
-live would make the browser abort the first one and flicker.
+**`loaders` in `src/transitions/registry.ts` is keyed by engine AND by mode**, and everything the
+UI says about an axis is derived from it: `ready`, and `readyModes` — the modes an engine can
+actually run. `EngineMeta.modes` stays hand-written because it is a different statement (what the
+engine is *meant* to do, overlay included), and a test holds `readyModes ⊆ modes` so the two
+cannot drift the way `TransitionEngine.modes` once did. A module is one engine in one mode, so no
+engine ever branches on the mode: it writes its own `data-vt-mode` literally.
 
-Note the import direction between the two directories: `themes/use-theme-store.ts` imports
-`transitions/types` (a leaf module with no imports of its own) while `transitions/index.ts`
-imports the store. Keep new shared types in `transitions/types.ts`.
+Engines are **dynamically imported** so the bundle weight the lab measures is real (`native` is
+0.21 kB, `anime` 30.45 kB, `motion` 61.44 kB, `gsap` 69.95 kB — and that spread is a finding, not
+trivia: the three bridge engines are doing the identical job).
+`runTransition()` also holds an anti-overlap lock — a second theme change while a transition is
+live would make the browser abort the first one and flicker. `loaderFor()` never degrades
+quietly: an engine with no loader, or a mode the engine cannot run, warns and **corrects the
+selection** so the picker stops announcing something else.
+
+An engine may own an extra axis, declared as `EngineMeta.options` — tailwind's five sub-engines
+today. It is a descriptor and not a component with `if (engine === 'tailwind')`, so the settings
+bar walks it without knowing which engine it is.
+
+Note the import direction: `transitions/registry.ts` and `transitions/types.ts` are leaves (no
+imports of their own beyond each other), `themes/use-theme-store.ts` imports both, and
+`transitions/index.ts` imports the store. That is why the engine↔mode reconciliation lives in
+`registry.ts` and not in `index.ts`: the store has to call it to validate what comes back from
+`localStorage`, and importing `index.ts` would close a real cycle. Keep new shared types in
+`transitions/types.ts` and new engine data in `transitions/registry.ts`.
 
 `useThemeSwitcher` lives in `src/hooks/use-theme-switcher.ts` and **not** in the store,
 precisely because it imports `runTransition` — putting it in the store would close a real
@@ -167,9 +183,14 @@ live consumers are the route effects in `hub.tsx` and `theme-route.tsx`, and bro
 back/forward. Don't "fix" the slot on the assumption that a burst of clicking reaches it.
 
 Since the pause is real, the chrome states it: `[data-vt-running]` on `<html>` drops the theme
-buttons, the engine select and the slider to `opacity: 0.5` (`styles/transitions.css`), plus
-`aria-busy` on both panels from `useIsTransitioning()`. Three things there are load-bearing:
+buttons, the selects and the slider to `opacity: 0.5` (`styles/transitions.css`), plus
+`aria-busy` on both panels and on the settings popup from `useIsTransitioning()`. Four things
+there are load-bearing:
 
+- **`CHROME_FONT` (`app-chrome`) has to be on the settings popup too.** The popup portalizes into
+  `body`, so it is a descendant of `[data-vt-running]` but not of the panel, and the dimming rule
+  asks for both. The same class is what pins it to Geist against `[data-theme]`. One class, two
+  problems — see `components/layout/chrome.ts`.
 - **`paintRunning()` writes the attribute synchronously from inside `setRunning`**, never from
   an effect — same reasoning as `paintTheme()`. There is an `await` on the engine loader between
   `setRunning(true)` and `startViewTransition`, so a React commit would race the snapshot
@@ -199,7 +220,8 @@ equal specificity (0,1,0): every theme computed `--background: oklch(1 0 0)` and
 does not declare. Nothing may move the defaults out of that layer.
 
 `.app-chrome` is the deliberate exception and stays **unlayered**: it has to keep outranking
-`[data-theme]` so the control bar stays on Geist while themes are compared.
+`[data-theme]` so the control bar — and the settings popup, which portalizes out of it — stays on
+Geist while themes are compared.
 
 The `.dark {…}` block shadcn ships is not here. Nothing in this project sets that class — the 86
 `dark:` utilities key on `[data-scheme]` through the custom variant, and the scheme comes from
@@ -305,7 +327,7 @@ edit). If `docs/` is missing, just proceed — it means someone else cloned the 
   copy of the scheme map to keep in sync.
 - `@vtbag/inspection-chamber` (frame-by-frame view transition debugging) is installed and its
   dev import lives in `src/main.tsx`, but it is **commented out**: its overlay covered the
-  whole page. Unresolved. The speed slider in the top bar (0.25×–2×) is the working way to
-  inspect a transition meanwhile.
+  whole page. Unresolved. The speed slider in the settings popover (0.25×–2×) is the working way
+  to inspect a transition meanwhile.
 - `avatar.tsx` blend modes (`mix-blend-darken`) are still unhandled and are unpredictable over
   translucent surfaces — relevant to `glass` and `frutiger`.
