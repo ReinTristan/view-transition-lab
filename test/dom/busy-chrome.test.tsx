@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
-import { CHROME_PANEL } from '@/components/layout/chrome'
+import { CHROME_FONT, CHROME_PANEL } from '@/components/layout/chrome'
 import { Button } from '@/components/ui/button'
 
 async function renderChrome() {
@@ -35,6 +35,24 @@ describe('the chrome while a wipe runs', () => {
     document.documentElement.dataset.vtRunning = ''
 
     expect(getComputedStyle(button).transitionDuration).toBe('0s')
+  })
+
+  // The settings popover portalizes into body, so its controls are outside the
+  // panel and outside #root. They still have to dim, and CHROME_FONT is what
+  // keeps `[data-vt-running] .app-chrome :is(...)` matching out there.
+  test('a control outside the panel dims too, as long as it carries the font class', async () => {
+    const screen = await render(
+      <div className={CHROME_FONT}>
+        <Button>Engine</Button>
+      </div>
+    )
+    const button = screen.container.querySelector(
+      '[data-slot="button"]'
+    ) as HTMLElement
+    expect(getComputedStyle(button).opacity).toBe('1')
+
+    document.documentElement.dataset.vtRunning = ''
+    expect(getComputedStyle(button).opacity).toBe('0.5')
   })
 
   // The cursor follows the hit-tested element, and mid-wipe that is the root —

@@ -1,12 +1,10 @@
 import { NavLink, Outlet, useMatch } from 'react-router'
-import { EnginePicker } from '@/components/controls/engine-picker'
-import { SpeedSlider } from '@/components/controls/speed-slider'
+import { SettingsPopover } from '@/components/controls/settings-popover'
 import { ThemePicker } from '@/components/controls/theme-picker'
 import { ThemeSwapper } from '@/components/controls/theme-swapper'
 import { CHROME_PANEL } from '@/components/layout/chrome'
 import { GithubIcon } from '@/components/ui/github-icon'
 import { Separator } from '@/components/ui/separator'
-import { useIsDesktop } from '@/hooks/use-media-query'
 import { useIsTransitioning } from '@/themes/use-theme-store'
 
 export function AppShell() {
@@ -14,12 +12,10 @@ export function AppShell() {
   // route knowledge the shell has, and it earns it: the swapper is meaningless
   // on /theme/:id, which is pinned to a theme by definition.
   const isHub = useMatch('/') !== null
-  const isDesktop = useIsDesktop()
   // The visual half of this lives in CSS, keyed on data-vt-running: see
   // paintRunning. This is only the semantics, and a frame of React lag costs
   // nothing there. aria-busy and not aria-disabled — the controls still answer.
   const running = useIsTransitioning()
-  const separatorOrientation = isDesktop ? 'vertical' : 'horizontal'
   return (
     <div className='min-h-dvh'>
       {/* Sticky rather than fixed on purpose: the stack keeps its own box in
@@ -33,15 +29,16 @@ export function AppShell() {
           back on for each pill's own box. */}
       <div className='pointer-events-none sticky top-3 z-30 mt-3 flex flex-col items-center gap-2'>
         <header className={CHROME_PANEL} aria-busy={running}>
-          <nav className='flex flex-col flex-wrap items-center gap-x-4 gap-y-2 md:flex-row'>
+          {/* One row now, and it stays one row at every width: the axes moved
+              behind the settings button, so there is nothing left here that
+              needs to stack on a phone. */}
+          <nav className='flex items-center gap-x-4 gap-y-2'>
             <NavLink to='/' className='font-heading font-semibold text-sm'>
               view transitions
             </NavLink>
-            <Separator orientation={separatorOrientation} />
-            <EnginePicker />
-            <Separator orientation={separatorOrientation} />
-            <SpeedSlider />
-            <Separator orientation={separatorOrientation} />
+            <Separator orientation='vertical' />
+            <SettingsPopover />
+            <Separator orientation='vertical' />
             {/* End of the row and not pushed right: CHROME_PANEL is w-fit, so
                 the panel hugs its content and there is no right edge to push
                 against. The busy-state rule leaves it alone on purpose — it

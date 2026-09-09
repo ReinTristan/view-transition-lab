@@ -35,6 +35,7 @@ export default mergeConfig(
         'vitest-browser-react',
         'class-variance-authority',
         '@base-ui/react/button',
+        '@base-ui/react/popover',
         '@base-ui/react/select',
         '@base-ui/react/separator',
         '@base-ui/react/slider',
