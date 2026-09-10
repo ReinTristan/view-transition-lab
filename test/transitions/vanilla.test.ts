@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
-import { nativeEngine } from '@/transitions/native'
 import type { TransitionContext } from '@/transitions/types'
+import { vanillaEngine } from '@/transitions/vanilla'
 import { fakeReducedMotion } from '../helpers/lab'
 
 function ctx(overrides: Partial<TransitionContext> = {}): TransitionContext {
@@ -16,17 +16,17 @@ function ctx(overrides: Partial<TransitionContext> = {}): TransitionContext {
  * The annex for the reference engine: what needs a fake `apply` and therefore
  * cannot go through runTransition, which owns the real one.
  */
-describe('nativeEngine', () => {
+describe('vanillaEngine', () => {
   test('applies exactly once', async () => {
     const apply = vi.fn()
-    await nativeEngine.run(apply, ctx())
+    await vanillaEngine.run(apply, ctx())
 
     expect(apply).toHaveBeenCalledTimes(1)
   })
 
   test('declares native mode to the stylesheet while it runs', async () => {
     const seen: (string | undefined)[] = []
-    await nativeEngine.run(() => {
+    await vanillaEngine.run(() => {
       seen.push(document.documentElement.dataset.vtMode)
     }, ctx())
 
@@ -38,7 +38,7 @@ describe('nativeEngine', () => {
     const start = vi.spyOn(document, 'startViewTransition')
     const apply = vi.fn()
 
-    await nativeEngine.run(apply, ctx({ reducedMotion: true }))
+    await vanillaEngine.run(apply, ctx({ reducedMotion: true }))
 
     expect(apply).toHaveBeenCalledTimes(1)
     expect(start).not.toHaveBeenCalled()

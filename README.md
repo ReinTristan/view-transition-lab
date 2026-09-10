@@ -44,7 +44,7 @@ same engine can implement more than one:
 
 | engine | modes | chunk | notes |
 |---|---|---|---|
-| Native | `native` | 0.21 kB | No library at all. The animation is CSS on the pseudo-element. |
+| Vanilla | `native` | 0.22 kB | No library at all. The animation is hand-written CSS on the pseudo-element. |
 | Anime.js | `bridge` | 30.45 kB | One `requestAnimationFrame` loop shared by every animation on the page. |
 | Motion | `bridge` | 61.44 kB | The reference implementation of the bridge. |
 | GSAP | `bridge` | 69.95 kB | Its own ticker. Flip lands with the overlay mode. |

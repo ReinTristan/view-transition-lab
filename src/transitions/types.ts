@@ -4,7 +4,7 @@
  * the themes' isThemeId() in registry.ts.
  */
 export const ENGINE_IDS = [
-  'native',
+  'vanilla',
   'motion',
   'gsap',
   'tailwind',
@@ -14,7 +14,7 @@ export const ENGINE_IDS = [
 export type EngineId = (typeof ENGINE_IDS)[number]
 
 /** Fixed, not derived from anything. Same idea as DEFAULT_THEME. */
-export const DEFAULT_ENGINE: EngineId = 'native'
+export const DEFAULT_ENGINE: EngineId = 'vanilla'
 
 export function isEngineId(value: unknown): value is EngineId {
   return (

@@ -27,8 +27,8 @@ describe('EnginePicker', () => {
     const screen = await render(<EnginePicker />)
 
     // The label from engineList, not the raw id: SelectValue is handed a
-    // formatter. Harmless-looking for native/motion, but it is what keeps the
-    // trigger from printing 'gsap' next to 'Native' the day GSAP lands.
+    // formatter. Harmless-looking for vanilla/motion, but it is what keeps the
+    // trigger from printing 'gsap' next to 'Vanilla' the day GSAP lands.
     expect(
       screen.container.querySelector('[data-slot="select-trigger"]')
         ?.textContent
@@ -36,7 +36,7 @@ describe('EnginePicker', () => {
   })
 
   // An engine with no loader must not look pickable: choosing it would run
-  // native while the picker claimed otherwise.
+  // vanilla while the picker claimed otherwise.
   test('offers every engine but blocks the ones not implemented', async () => {
     const items = await openTheSelect()
 

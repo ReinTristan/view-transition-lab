@@ -115,7 +115,7 @@ describe('SettingsPopover', () => {
     const popup = await openSettings()
     expect(control(popup, 'mode')?.textContent).toContain('bridge')
 
-    useThemeStore.getState().setEngine('native')
+    useThemeStore.getState().setEngine('vanilla')
     await vi.waitFor(() => {
       expect(control(popup, 'mode')?.textContent).toContain('native')
     })

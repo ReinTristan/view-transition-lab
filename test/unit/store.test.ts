@@ -58,7 +58,7 @@ describe('the engine and mode pair', () => {
     store().setEngine('motion')
     expect(store().mode).toBe('bridge')
 
-    store().setEngine('native')
+    store().setEngine('vanilla')
     expect(store().mode).toBe('native')
   })
 
@@ -76,11 +76,12 @@ describe('the engine and mode pair', () => {
     const store = () => useThemeStore.getState()
 
     store().setEngineOption('tailwind', 'not-a-variant')
-    expect(store().engineOptions.tailwind).toBe('bare')
+    expect(store().engineOptions.tailwind).toBe('core')
 
-    // native declares no option axis at all: there is nothing to write.
-    store().setEngineOption('native', 'bare')
-    expect(store().engineOptions.native).toBeUndefined()
+    // vanilla declares no option axis at all: there is nothing to write. The
+    // choice is deliberately nonsense — it must not read as a real one.
+    store().setEngineOption('vanilla', 'anything')
+    expect(store().engineOptions.vanilla).toBeUndefined()
   })
 })
 
@@ -101,11 +102,11 @@ describe('persistence', () => {
   })
 
   test('a persisted mode is validated against its own engine', async () => {
-    // bridge is a real mode and native is a real engine — the pair is what is
+    // bridge is a real mode and vanilla is a real engine — the pair is what is
     // wrong, which is why isTransitionMode alone would let this through.
     await rehydrateFrom({
       theme: 'glass',
-      engine: 'native',
+      engine: 'vanilla',
       mode: 'bridge',
       speed: 1,
     })
@@ -119,12 +120,12 @@ describe('persistence', () => {
 
   test('a rotten engine option is cleaned entry by entry', async () => {
     await rehydrateFrom({
-      engine: 'native',
+      engine: 'vanilla',
       engineOptions: { tailwind: 'gone-from-the-list', 'not-an-engine': 'x' },
     })
 
     const { engineOptions } = useThemeStore.getState()
-    expect(engineOptions.tailwind).toBe('bare')
+    expect(engineOptions.tailwind).toBe('core')
     expect(Object.keys(engineOptions)).toEqual(['tailwind'])
   })
 
@@ -146,7 +147,7 @@ describe('persistence', () => {
   })
 
   test('a stale speed is rewritten on disk, not just in memory', async () => {
-    await rehydrateFrom({ theme: 'glass', engine: 'native', speed: 9 })
+    await rehydrateFrom({ theme: 'glass', engine: 'vanilla', speed: 9 })
 
     expect(useThemeStore.getState().speed).toBe(2)
     expect(readPersisted().speed).toBe(2)
@@ -185,7 +186,7 @@ describe('the DOM as render target', () => {
   })
 
   test('hydrateDom paints the restored theme', async () => {
-    await rehydrateFrom({ theme: 'neobrutalism', engine: 'native', speed: 1 })
+    await rehydrateFrom({ theme: 'neobrutalism', engine: 'vanilla', speed: 1 })
     delete document.documentElement.dataset.theme
 
     hydrateDom()

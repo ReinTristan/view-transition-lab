@@ -1,7 +1,7 @@
 {
   "name": "view-transition-lab",
   "private": true,
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "The same theme switch implemented N times behind one interface, to compare View Transitions API engines and modes honestly.",
   "author": "ReinTristan",
   "license": "MIT",

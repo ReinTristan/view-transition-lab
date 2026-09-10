@@ -80,7 +80,7 @@ describe('engine registry', () => {
   })
 
   // The guard against an engine announcing itself before it exists — the drift
-  // that once had the picker saying GSAP while native ran.
+  // that once had the picker saying GSAP while vanilla ran.
   test.each(engineList.filter((engine) => engine.ready).map((e) => e.id))(
     '%s claims ready and really loads',
     async (id) => {

@@ -59,13 +59,13 @@ that **the same interaction is implemented N times behind one common interface**
 implementations can be compared honestly. Three orthogonal axes:
 
 - **Theme** (7) — autonomous aesthetics, not light/dark variants of one design.
-- **Engine** (5) — who runs the animation: native, Motion, GSAP, Tailwind, anime.js.
+- **Engine** (5) — who runs the animation: vanilla, Motion, GSAP, Tailwind, anime.js.
 - **Mode** (3) — `native` (declarative CSS on the pseudo-element), `bridge` (the browser takes
   the snapshots, a JS library drives the progress), `overlay` (no VT API at all).
 
 Currently implemented: 7 themes (2 partially designed — `pastel` and `neobrutalism`, the
 furthest along but **not** finished — 5 are pendings with a minimum viable palette), and 4
-engines (`native`, `motion`, `gsap`, `anime`). Only `tailwind` is left. The `mode` axis is
+engines (`vanilla`, `motion`, `gsap`, `anime`). Only `tailwind` is left. The `mode` axis is
 selectable and persisted, but `overlay` has no module yet, so it shows as pending everywhere.
 
 ## Architecture: the load-bearing decisions
@@ -151,8 +151,8 @@ engine is *meant* to do, overlay included), and a test holds `readyModes ⊆ mod
 cannot drift the way `TransitionEngine.modes` once did. A module is one engine in one mode, so no
 engine ever branches on the mode: it writes its own `data-vt-mode` literally.
 
-Engines are **dynamically imported** so the bundle weight the lab measures is real (`native` is
-0.21 kB, `anime` 30.45 kB, `motion` 61.44 kB, `gsap` 69.95 kB — and that spread is a finding, not
+Engines are **dynamically imported** so the bundle weight the lab measures is real (`vanilla` is
+0.22 kB, `anime` 30.45 kB, `motion` 61.44 kB, `gsap` 69.95 kB — and that spread is a finding, not
 trivia: the three bridge engines are doing the identical job).
 `runTransition()` also holds an anti-overlap lock — a second theme change while a transition is
 live would make the browser abort the first one and flicker. `loaderFor()` never degrades

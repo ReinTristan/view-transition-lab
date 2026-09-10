@@ -130,7 +130,7 @@ type PersistedState = Pick<
 /**
  * Validates whatever came back from storage. A hand-edited or stale blob used
  * to reach the app through a cast, and the damage was quiet: the engine Select
- * kept a `value` matching none of its items and the loader silently ran native
+ * kept a `value` matching none of its items and the loader silently ran vanilla
  * while the picker still claimed GSAP.
  *
  * `persisted` is unknown by contract, so it gets narrowed field by field and

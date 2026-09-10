@@ -14,7 +14,7 @@ import { DEFAULT_ENGINE } from './types'
  * Resolves the engine+mode pair to something that actually runs.
  *
  * Falling back quietly is the one thing this lab must not do: the picker would
- * keep saying GSAP while native ran, and the bundle figures it reports would be
+ * keep saying GSAP while vanilla ran, and the bundle figures it reports would be
  * measuring something else entirely. Correcting the selection makes the UI catch
  * up with what actually executes.
  *
@@ -32,7 +32,7 @@ function loaderFor(id: EngineId, mode: TransitionMode) {
 
   if (!meta.ready) {
     console.warn(
-      `[transitions] no loader for "${id}" yet - falling back to native.`
+      `[transitions] no loader for "${id}" yet - falling back to ${DEFAULT_ENGINE}.`
     )
     store.setEngine(DEFAULT_ENGINE)
     return fallbackLoader

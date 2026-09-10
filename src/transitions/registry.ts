@@ -18,7 +18,9 @@ type EngineLoader = () => Promise<TransitionEngine>
  * from it.
  */
 const loaders = {
-  native: { native: () => import('./native').then((m) => m.nativeEngine) },
+  vanilla: {
+    native: () => import('./vanilla').then((m) => m.vanillaEngine),
+  },
   motion: { bridge: () => import('./motion').then((m) => m.motionEngine) },
   gsap: { bridge: () => import('./gsap').then((m) => m.gsapEngine) },
   anime: { bridge: () => import('./anime').then((m) => m.animeEngine) },
@@ -31,7 +33,7 @@ const loaders = {
  * hands back when the selection cannot run, so the fallback needs no cast and no
  * non-null assertion to prove it exists.
  */
-export const fallbackLoader: EngineLoader = loaders.native.native
+export const fallbackLoader: EngineLoader = loaders.vanilla.native
 
 /** The modes an engine can actually run, straight from the loader table. */
 function loadedModes(id: EngineId): TransitionMode[] {
@@ -93,7 +95,7 @@ export interface EngineMeta {
 /**
  * The five ways of producing a CSS animation in Tailwind v4 — not five
  * animation libraries, five mechanisms, which is what justifies the sub-axis.
- * The order is the implementation order: bare first, because it is the only one
+ * The order is the implementation order: core first, because it is the only one
  * with no external dependency, so anything that breaks there belongs to the
  * tailwind engine itself and not to a library.
  *
@@ -105,8 +107,8 @@ const tailwindVariants: EngineOption = {
   label: 'Library',
   choices: [
     {
-      id: 'bare',
-      label: 'Tailwind v4 bare',
+      id: 'core',
+      label: 'Tailwind core',
       blurb: 'transition-* with @starting-style. No library at all.',
       status: 'pending',
     },
@@ -148,13 +150,13 @@ const tailwindVariants: EngineOption = {
  */
 export const engineList: EngineMeta[] = [
   {
-    id: 'native',
-    label: 'Native',
+    id: 'vanilla',
+    label: 'Vanilla',
     blurb:
-      'The browser does it all. The animation is CSS on the pseudo-element.',
+      'No library at all: the animation is hand-written CSS on the pseudo-element.',
     modes: ['native'],
-    readyModes: loadedModes('native'),
-    ready: loadedModes('native').length > 0,
+    readyModes: loadedModes('vanilla'),
+    ready: loadedModes('vanilla').length > 0,
   },
   {
     id: 'motion',
@@ -178,7 +180,7 @@ export const engineList: EngineMeta[] = [
     id: 'tailwind',
     label: 'Tailwind',
     blurb:
-      'CSS only, with sub-engines: tw-animate-css, animated, animations, motion and bare.',
+      'CSS only, with sub-engines: core, tw-animate-css, animations, animated and motion.',
     modes: ['native'],
     readyModes: loadedModes('tailwind'),
     ready: loadedModes('tailwind').length > 0,

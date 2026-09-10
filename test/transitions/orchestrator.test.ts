@@ -8,7 +8,7 @@ const store = () => useThemeStore.getState()
 beforeEach(() => {
   // The shortest wipe the slider allows, so the suite is not mostly waiting.
   store().setSpeed(2)
-  store().setEngine('native')
+  store().setEngine('vanilla')
 })
 
 describe('the busy flag', () => {
@@ -143,6 +143,6 @@ describe('an engine with no loader', () => {
       expect.stringContaining('no loader for "tailwind"')
     )
     // The picker must stop announcing an engine that is not the one running.
-    expect(store().engine).toBe('native')
+    expect(store().engine).toBe('vanilla')
   })
 })
