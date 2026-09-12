@@ -3,7 +3,7 @@ import type { TransitionEngine } from './types'
 
 /**
  * The reference engine: no library at all, the browser does everything. The
- * animation lives in transitions.css as hand-written keyframes on
+ * animation lives in transitions/vanilla.css as hand-written keyframes on
  * ::view-transition-new(root); all that is left in JS is computing the origin
  * and making the call.
  *

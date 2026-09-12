@@ -9,6 +9,8 @@ export interface Trace {
   progress: number[]
   /** CSS animation names running on a ::view-transition-* pseudo-element. */
   animations: Set<string>
+  /** Properties with a CSS transition running on one of those pseudo-elements. */
+  transitions: Set<string>
   pseudos: Set<string>
   /** Wall-clock length of the whole run. */
   elapsed: number
@@ -27,6 +29,7 @@ export async function trace(theme: ThemeId): Promise<Trace> {
   const root = document.documentElement
   const modes = new Set<string>()
   const animations = new Set<string>()
+  const transitions = new Set<string>()
   const pseudos = new Set<string>()
   const progress: number[] = []
   let sampling = true
@@ -51,6 +54,11 @@ export async function trace(theme: ThemeId): Promise<Trace> {
       if ('animationName' in animation) {
         animations.add(String(animation.animationName))
       }
+      // A CSS transition shows up on the same timeline, and without this the
+      // trace would be blind to any wipe that is not a keyframe animation.
+      if ('transitionProperty' in animation) {
+        transitions.add(String(animation.transitionProperty))
+      }
     }
 
     requestAnimationFrame(sample)
@@ -69,6 +77,7 @@ export async function trace(theme: ThemeId): Promise<Trace> {
     modes,
     progress,
     animations,
+    transitions,
     pseudos,
     elapsed: performance.now() - started,
     expected,

@@ -28,8 +28,8 @@ beforeEach(() => {
   delete root.dataset.theme
   delete root.dataset.scheme
   delete root.dataset.vtRunning
-  // cleanup() already knows the --vt-* list and data-vt-mode; repeating it here
-  // would be a second copy to keep in sync.
+  // cleanup() already knows the --vt-* list and the data-vt-* attributes;
+  // repeating it here would be a second copy to keep in sync.
   cleanup()
 })
 

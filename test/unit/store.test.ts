@@ -129,6 +129,17 @@ describe('persistence', () => {
     expect(Object.keys(engineOptions)).toEqual(['tailwind'])
   })
 
+  // A real choice, just not a runnable one. The day tailwindcss-motion lands,
+  // point this at whichever sub-engine is still pending.
+  test('a persisted choice that is not ready yet falls back to a ready one', async () => {
+    await rehydrateFrom({
+      engine: 'tailwind',
+      engineOptions: { tailwind: 'tailwindcss-motion' },
+    })
+
+    expect(useThemeStore.getState().engineOptions.tailwind).toBe('core')
+  })
+
   test('a non-object blob leaves the current state alone', async () => {
     useThemeStore.getState().setTheme('cyberpunk')
     await rehydrateFrom('nonsense' as unknown as Record<string, unknown>)

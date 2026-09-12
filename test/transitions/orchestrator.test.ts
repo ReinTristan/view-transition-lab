@@ -130,8 +130,11 @@ describe('a mode with no loader', () => {
   })
 })
 
+// Switched off, not deleted. Since tailwind landed every EngineId has a loader,
+// so there is no real engine left to point this at. The day one is declared
+// without a module, aim setEngine at it and turn this back into `test`.
 describe('an engine with no loader', () => {
-  test('warns and corrects the selection instead of degrading quietly', async () => {
+  test.skip('warns and corrects the selection instead of degrading quietly', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
       /* silenced: the warning is the assertion, not noise */
     })

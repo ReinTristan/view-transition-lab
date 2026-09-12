@@ -57,6 +57,13 @@ export interface TransitionContext {
   /** Milliseconds, already scaled by the speed multiplier. */
   duration: number
   reducedMotion: boolean
+  /**
+   * The choice picked on the engine's own extra axis, already reconciled — or
+   * null when the engine declares none. Unlike the engine and the mode it is not
+   * a literal of the module: it changes at runtime within one engine, so it
+   * travels here and prepare() projects it for the stylesheet to select on.
+   */
+  option: string | null
 }
 
 /**
@@ -67,7 +74,8 @@ export interface TransitionContext {
  * that was wrong.
  *
  * A module is one engine in one mode: `loaders` is keyed by both, so each module
- * writes its own data-vt-mode literally and never has to branch on it.
+ * passes its own data-vt-engine and data-vt-mode literally and never has to
+ * branch on either.
  */
 export interface TransitionEngine {
   /**

@@ -23,6 +23,9 @@ const loaders = {
   },
   motion: { bridge: () => import('./motion').then((m) => m.motionEngine) },
   gsap: { bridge: () => import('./gsap').then((m) => m.gsapEngine) },
+  tailwind: {
+    native: () => import('./tailwind').then((m) => m.tailwindEngine),
+  },
   anime: { bridge: () => import('./anime').then((m) => m.animeEngine) },
 } satisfies Partial<
   Record<EngineId, Partial<Record<TransitionMode, EngineLoader>>>
@@ -110,7 +113,7 @@ const tailwindVariants: EngineOption = {
       id: 'core',
       label: 'Tailwind core',
       blurb: 'transition-* with @starting-style. No library at all.',
-      status: 'pending',
+      status: 'ready',
     },
     {
       id: 'tw-animate-css',
@@ -210,9 +213,9 @@ export function engineMeta(id: EngineId): EngineMeta {
  * selected mode instead of leaving an impossible pair behind. Same policy as
  * loaderFor's: correct the selection, never degrade quietly.
  *
- * Falls back to a declared-but-pending mode for an engine with no loaders at all
- * (tailwind today), so the picker shows what that engine is meant to do rather
- * than an unrelated default.
+ * Falls back to a declared-but-pending mode for an engine with no loaders at all,
+ * so the picker shows what that engine is meant to do rather than an unrelated
+ * default.
  */
 export function reconcileMode(
   id: EngineId,
@@ -223,10 +226,20 @@ export function reconcileMode(
   return meta.readyModes[0] ?? meta.modes[0] ?? DEFAULT_MODE
 }
 
-/** The engine's option choice, or its first one. Null when it has no options. */
+/**
+ * The engine's option choice if it exists and is ready, otherwise its first
+ * ready one. Null when the engine has no options.
+ *
+ * A pending choice is refused for the same reason reconcileMode refuses a mode
+ * with no loader: a sub-engine is CSS, and a pending one has no rule yet. Let
+ * through, it would reach data-vt-option with nothing selecting it — no
+ * animation, the theme snapping over, and the picker naming something else.
+ * Only an axis with nothing ready at all falls back to its first choice.
+ */
 export function reconcileOption(id: EngineId, choice: unknown): string | null {
   const { options } = engineMeta(id)
   if (!options) return null
-  const found = options.choices.find((item) => item.id === choice)
-  return found?.id ?? options.choices[0].id
+  const ready = options.choices.filter((item) => item.status === 'ready')
+  const found = ready.find((item) => item.id === choice)
+  return found?.id ?? ready[0]?.id ?? options.choices[0].id
 }

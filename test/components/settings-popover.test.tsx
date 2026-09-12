@@ -50,10 +50,7 @@ describe('SettingsPopover', () => {
     const popup = await openSettings()
     expect(popup.querySelector('[id^="engine-option-"]')).toBeNull()
 
-    // setState and not setEngine: tailwind has no loader, so the picker blocks
-    // it. The row is infra waiting for the engine, and this is the only way to
-    // reach it until that lands.
-    useThemeStore.setState({ engine: 'tailwind', mode: 'native' })
+    useThemeStore.getState().setEngine('tailwind')
     await vi.waitFor(() => {
       expect(popup.querySelector('[id^="engine-option-"]')).not.toBeNull()
     })

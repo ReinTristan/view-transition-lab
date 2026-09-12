@@ -1,0 +1,41 @@
+/* Tailwind core: transition-* with @starting-style, and no library at all.
+ *
+ * The first of tailwind's five sub-engines, and the one that defines the slot
+ * the other four fill: keyed on data-vt-engine AND data-vt-option, so each
+ * sub-engine owns one file here and none of them can match another's rule.
+ *
+ * @apply is not a shortcut, it is the whole axis. The pseudo-element is not a
+ * DOM node, so it carries no classes: utilities can only reach it through here.
+ * That is also what keeps the five comparable — the libraries can only be asked
+ * for their animation through their utilities, and copying their @keyframes by
+ * hand would be comparing a transcription of them.
+ *
+ * The mechanism comes from utilities; the geometry stays plain CSS. The two
+ * circle()s are the wipe itself, the same one every engine in the lab draws.
+ *
+ * No `animation: none` and no keepalive. The reset in transitions.css already
+ * clears the animation, vanilla's rule is keyed on its own engine so vt-reveal
+ * never matches here, and a running CSS transition holds the view transition
+ * open by itself — measured, not assumed.
+ *
+ * See transitions.css for the shared half.
+ */
+
+[data-vt-engine="tailwind"][data-vt-option="core"]::view-transition-new(root) {
+  clip-path: circle(var(--vt-radius) at var(--vt-x) var(--vt-y));
+  @apply transition-[clip-path] duration-(--vt-duration) ease-(--vt-ease);
+}
+
+/* Mandatory, not decorative: clip-path starts out as `none`, and `none` does
+   not interpolate into circle(). Both ends of the transition have to be a
+   circle for there to be anything in between.
+
+   The wrapping form and not the nested one, because that is the form the
+   probe verified on this pseudo-element. */
+@starting-style {
+  [data-vt-engine="tailwind"][data-vt-option="core"]::view-transition-new(
+    root
+  ) {
+    clip-path: circle(0 at var(--vt-x) var(--vt-y));
+  }
+}

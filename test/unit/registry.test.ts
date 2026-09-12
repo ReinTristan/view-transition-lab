@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import type { ThemeId } from '@/themes/registry'
 import { DEFAULT_THEME, isThemeId, themeList, themes } from '@/themes/registry'
-import { engineList, engineMeta, reconcileMode } from '@/transitions'
+import {
+  engineList,
+  engineMeta,
+  reconcileMode,
+  reconcileOption,
+} from '@/transitions'
 import {
   DEFAULT_ENGINE,
   DEFAULT_MODE,
@@ -150,6 +155,22 @@ describe('engine registry', () => {
       expect(ids.length).toBeGreaterThan(0)
     }
   })
+
+  // Same policy as reconcileMode: a pending sub-engine has no CSS rule yet, so
+  // letting it through would write an option nothing selects on.
+  test('reconcileOption never answers with a pending choice', () => {
+    for (const engine of engineList) {
+      if (!engine.options) continue
+      const ready = engine.options.choices
+        .filter((choice) => choice.status === 'ready')
+        .map((choice) => choice.id)
+      if (ready.length === 0) continue
+
+      for (const choice of engine.options.choices) {
+        expect(ready).toContain(reconcileOption(engine.id, choice.id))
+      }
+    }
+  })
 })
 
 describe('cross-checks', () => {
@@ -159,5 +180,20 @@ describe('cross-checks', () => {
       (path) => path.split('/').pop()?.replace('.css', '') as ThemeId
     )
     for (const id of Object.keys(themes)) expect(names).toContain(id)
+  })
+
+  // A sub-engine is CSS, not a module, so `ready` cannot be derived for it the
+  // way it is for engines. This is the next best thing: a choice that claims to
+  // be ready has to have its rule on disk.
+  test('every ready engine option has its CSS file', () => {
+    const files = Object.keys(import.meta.glob('@/styles/transitions/*/*.css'))
+    for (const engine of engineList) {
+      for (const choice of engine.options?.choices ?? []) {
+        if (choice.status !== 'ready') continue
+        expect(files).toContain(
+          `/src/styles/transitions/${engine.id}/${choice.id}.css`
+        )
+      }
+    }
   })
 })

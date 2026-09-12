@@ -22,9 +22,9 @@ export function prefersReducedMotion(): boolean {
 }
 
 /**
- * Gets the document ready for the wipe: circle origin, radius, duration, engine
- * and mode. Both attributes are what the stylesheets select on, and they answer
- * different questions:
+ * Gets the document ready for the wipe: circle origin, radius, duration, engine,
+ * mode and option. The attributes are what the stylesheets select on, and each
+ * answers a different question:
  *
  *   data-vt-mode   — how the wipe is produced. It is what bridge.css keys on,
  *                    shared by motion, gsap and anime on purpose: the three run
@@ -32,10 +32,13 @@ export function prefersReducedMotion(): boolean {
  *   data-vt-engine — who is running it. The native mode has two tenants that
  *                    write different CSS (vanilla by hand, tailwind through
  *                    utilities), so that mode splits per engine instead.
+ *   data-vt-option — which variant of that engine, for the engines that own an
+ *                    extra axis (tailwind's sub-engines). Absent otherwise.
  *
  * The rule, in one line: CSS per mode where the engines share the mechanism,
- * CSS per engine where they do not. Each module passes its own literals — no
- * engine ever branches on either axis.
+ * CSS per engine where they do not. Each module passes its own engine and mode
+ * as literals — no engine ever branches on either axis. The option is not a
+ * literal: it changes at runtime within one engine, so it comes in `ctx`.
  */
 export function prepare(
   ctx: TransitionContext,
@@ -53,6 +56,7 @@ export function prepare(
 
   root.dataset.vtEngine = engine
   root.dataset.vtMode = mode
+  if (ctx.option) root.dataset.vtOption = ctx.option
   root.style.setProperty('--vt-x', `${x}px`)
   root.style.setProperty('--vt-y', `${y}px`)
   root.style.setProperty('--vt-radius', `${radius}px`)
@@ -69,6 +73,7 @@ export function cleanup() {
   const root = document.documentElement
   delete root.dataset.vtEngine
   delete root.dataset.vtMode
+  delete root.dataset.vtOption
   for (const prop of VT_PROPS) {
     root.style.removeProperty(prop)
   }

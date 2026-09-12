@@ -3,7 +3,12 @@ import { motionEngine } from '@/transitions/motion'
 import type { TransitionContext } from '@/transitions/types'
 
 function ctx(): TransitionContext {
-  return { origin: { x: 10, y: 10 }, duration: 200, reducedMotion: false }
+  return {
+    origin: { x: 10, y: 10 },
+    duration: 200,
+    reducedMotion: false,
+    option: null,
+  }
 }
 
 function progressNow(): number {

@@ -13,8 +13,8 @@ const implemented = engineList.filter((engine) => engine.ready)
 
 /**
  * The conformance suite. It enumerates engineList rather than a hand-written
- * list, so gsap, tailwind and anime enrol themselves the day their `ready`
- * flips — nothing here has to be edited to cover them.
+ * list, so gsap, anime and tailwind each enrolled themselves the day their
+ * `ready` flipped — nothing here had to be edited to cover them.
  *
  * It drives through runTransition instead of importing the engine module, for
  * the same reason: the loader, the lock and the store writes are part of what a
@@ -81,9 +81,18 @@ describe.each(implemented)('engine: $id', (meta) => {
     expect([...result.pseudos]).toContain('::view-transition-new(root)')
 
     if (mode === 'native') {
-      // The animation is declarative, in transitions.css, and the JS bridge is
-      // never touched.
-      expect(result.animations).toContain('vt-reveal')
+      // The wipe is declarative CSS and the JS bridge is never touched. Which
+      // CSS is the engine's business — keyframes or a transition — so this asks
+      // only that there is some; the names belong to each engine's annex.
+      //
+      // The -ua- filter is load-bearing. The browser runs its own
+      // -ua-view-transition-group-anim-root on the group pseudo-element in
+      // every mode, always, so counting it would let an engine with no wipe
+      // at all pass.
+      const own = [...result.animations].filter(
+        (name) => !name.startsWith('-ua-')
+      )
+      expect(own.length + result.transitions.size).toBeGreaterThan(0)
       expect(Math.max(...result.progress)).toBe(0)
       return
     }

@@ -11,7 +11,7 @@ import type { TransitionContext } from '@/transitions/types'
 const root = document.documentElement
 
 function ctx(x: number, y: number): TransitionContext {
-  return { origin: { x, y }, duration: 600, reducedMotion: false }
+  return { origin: { x, y }, duration: 600, reducedMotion: false, option: null }
 }
 
 function readVar(name: string): string {
@@ -32,6 +32,18 @@ describe('prepare', () => {
     expect(root.style.getPropertyValue('--vt-duration')).toBe('600ms')
     expect(root.style.getPropertyValue('--vt-progress')).toBe('0')
     expect(root.style.getPropertyValue('--vt-radius')).not.toBe('')
+  })
+
+  // The option is not a literal like the other two: it only exists for engines
+  // that own an extra axis, and an empty attribute would still match a
+  // presence selector.
+  test('writes the option only when the engine has one', () => {
+    prepare({ ...ctx(0, 0), option: 'core' }, 'tailwind', 'native')
+    expect(root.dataset.vtOption).toBe('core')
+
+    cleanup()
+    prepare(ctx(0, 0), 'vanilla', 'native')
+    expect(root.dataset.vtOption).toBeUndefined()
   })
 
   // The real innerWidth/innerHeight of a real browser is exactly what jsdom
@@ -80,13 +92,14 @@ describe('the bridge property', () => {
 
 describe('cleanup', () => {
   test('leaves nothing behind', () => {
-    prepare(ctx(10, 20), 'motion', 'bridge')
+    prepare({ ...ctx(10, 20), option: 'core' }, 'tailwind', 'native')
     setProgress(0.7)
 
     cleanup()
 
     expect(root.dataset.vtEngine).toBeUndefined()
     expect(root.dataset.vtMode).toBeUndefined()
+    expect(root.dataset.vtOption).toBeUndefined()
     for (const prop of [
       '--vt-x',
       '--vt-y',

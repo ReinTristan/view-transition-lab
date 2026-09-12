@@ -6,6 +6,7 @@ import {
   engineMeta,
   fallbackLoader,
   reconcileMode,
+  reconcileOption,
 } from './registry'
 import type { EngineId, TransitionMode } from './types'
 import { DEFAULT_ENGINE } from './types'
@@ -18,7 +19,7 @@ import { DEFAULT_ENGINE } from './types'
  * measuring something else entirely. Correcting the selection makes the UI catch
  * up with what actually executes.
  *
- * Two ways to miss: an engine with no loaders at all (tailwind today), and an
+ * Two ways to miss: an engine with no loaders at all, and an
  * engine that has loaders but not for the mode asked. The store reconciles the
  * mode on every setEngine, so the second one is only reachable from a
  * hand-edited persisted blob — which is exactly the case worth warning about.
@@ -77,6 +78,9 @@ export async function runTransition(
 
   try {
     const engine = await loaderFor(store.engine, store.mode)()
+    // Read again, not from `store`: loaderFor may have just corrected the
+    // selection, and the option has to belong to the engine that really runs.
+    const { engine: resolved, engineOptions } = useThemeStore.getState()
     await engine.run(
       () => {
         // setTheme writes the attributes synchronously before it touches the
@@ -88,6 +92,7 @@ export async function runTransition(
         origin,
         duration: getDuration(),
         reducedMotion: prefersReducedMotion(),
+        option: reconcileOption(resolved, engineOptions[resolved]),
       }
     )
   } finally {
