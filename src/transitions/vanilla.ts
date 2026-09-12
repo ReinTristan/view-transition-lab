@@ -19,7 +19,7 @@ export const vanillaEngine: TransitionEngine = {
       return
     }
 
-    prepare(ctx, 'native')
+    prepare(ctx, 'vanilla', 'native')
     try {
       await document.startViewTransition(apply).finished
     } finally {

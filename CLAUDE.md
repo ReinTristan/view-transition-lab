@@ -126,7 +126,8 @@ properties do inherit that far.
 The catch: with no active animation on the pseudo-element, the browser considers the
 transition finished as soon as `ready` resolves — before the library paints a single frame.
 The fix is an **inert** animation of the same duration that holds the transition open. It
-lives in `src/styles/transitions.css` and is engine-agnostic:
+lives in `src/styles/transitions/bridge.css` and is engine-agnostic — keyed on the mode, not on
+the engine, precisely because the three bridge engines share it:
 
 ```css
 [data-vt-mode='bridge']::view-transition-new(root) {
@@ -149,7 +150,16 @@ UI says about an axis is derived from it: `ready`, and `readyModes` — the mode
 actually run. `EngineMeta.modes` stays hand-written because it is a different statement (what the
 engine is *meant* to do, overlay included), and a test holds `readyModes ⊆ modes` so the two
 cannot drift the way `TransitionEngine.modes` once did. A module is one engine in one mode, so no
-engine ever branches on the mode: it writes its own `data-vt-mode` literally.
+engine ever branches on either axis: it passes its own `data-vt-engine` and `data-vt-mode` to
+`prepare()` as literals.
+
+**Two attributes because the stylesheets ask two different questions**, and the answer decides
+which one selects: `data-vt-mode` is *how* the wipe is produced, `data-vt-engine` is *who* runs
+it. The rule is **CSS per mode where the engines share the mechanism, CSS per engine where they
+do not** — motion, gsap and anime share the bridge rule on purpose, while the native mode has two
+tenants writing different CSS (vanilla by hand, tailwind through utilities) and so splits per
+engine. Keying native on the mode would make vanilla's rule match tailwind too, and every one of
+tailwind's five sub-engines would have to remember to cancel it.
 
 Engines are **dynamically imported** so the bundle weight the lab measures is real (`vanilla` is
 0.22 kB, `anime` 30.45 kB, `motion` 61.44 kB, `gsap` 69.95 kB — and that spread is a finding, not
@@ -219,8 +229,20 @@ not disabled — the browser is simply not routing anything to them for those fe
 ### CSS layering
 
 `src/index.css` is the import root — fonts, the `dark` variant, `@theme inline`, then
-`styles/transitions.css` and every `styles/themes/*.css`. Adding a theme file means adding its
-`@import` there too.
+`styles/transitions.css`, every `styles/transitions/*.css` and every `styles/themes/*.css`.
+**Adding a file under either of those two directories means adding its `@import` there too.**
+
+`styles/transitions.css` is the shared half — the `@property`, the `--vt-*` geometry, the base
+state of the root pseudo-elements, the busy state and the reduced-motion net — and each wipe sits
+in its own file beside it (`transitions/vanilla.css`, `transitions/bridge.css`). There is
+deliberately **no `native.css`**: that mode has nothing left to share once `vt-reveal` belongs to
+vanilla, and an empty file kept for symmetry would say something untrue.
+
+One pseudo-element nobody declares, worth knowing before debugging why a transition lasts what it
+lasts: the browser runs `-ua-view-transition-group-anim-root` on `::view-transition-group(root)`,
+in every mode, always. `transitions.css` sets `animation: none` on `old(root)` and `new(root)` but
+never touches the group, so that one is the floor underneath everything. It does not explain the
+bridge keepalive — it lasts whatever the UA says, not what `--vt-duration` asks for.
 
 **The neutral defaults live in `@layer base`, and that is the only reason the themes paint.**
 An unlayered rule beats a layered one whatever its specificity, and the theme files are in no

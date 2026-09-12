@@ -21,6 +21,8 @@
 @import "tailwind-animations";
 
 @import "./styles/transitions.css";
+@import "./styles/transitions/vanilla.css";
+@import "./styles/transitions/bridge.css";
 @import "./styles/themes/pastel.css";
 @import "./styles/themes/anthropic.css";
 @import "./styles/themes/frutiger.css";

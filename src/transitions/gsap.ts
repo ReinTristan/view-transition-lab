@@ -26,7 +26,7 @@ export const gsapEngine: TransitionEngine = {
       return
     }
 
-    prepare(ctx, 'bridge')
+    prepare(ctx, 'gsap', 'bridge')
     const transition = document.startViewTransition(apply)
 
     try {

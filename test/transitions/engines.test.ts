@@ -51,6 +51,7 @@ describe.each(implemented)('engine: $id', (meta) => {
     await runTransition('y2k', CENTRE)
 
     const root = document.documentElement
+    expect(root.dataset.vtEngine).toBeUndefined()
     expect(root.dataset.vtMode).toBeUndefined()
     for (const prop of [
       '--vt-x',

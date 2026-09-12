@@ -29,7 +29,7 @@ export const animeEngine: TransitionEngine = {
       return
     }
 
-    prepare(ctx, 'bridge')
+    prepare(ctx, 'anime', 'bridge')
     const transition = document.startViewTransition(apply)
 
     try {

@@ -19,9 +19,13 @@ function readVar(name: string): string {
 }
 
 describe('prepare', () => {
-  test('writes the mode and the five custom properties', () => {
-    prepare(ctx(10, 20), 'bridge')
+  test('writes the engine, the mode and the five custom properties', () => {
+    prepare(ctx(10, 20), 'motion', 'bridge')
 
+    // Two attributes and not one: the mode says how the wipe is produced and
+    // the engine says who runs it. bridge.css keys on the first, vanilla.css on
+    // the second — see prepare() for why the split is not symmetric.
+    expect(root.dataset.vtEngine).toBe('motion')
     expect(root.dataset.vtMode).toBe('bridge')
     expect(root.style.getPropertyValue('--vt-x')).toBe('10px')
     expect(root.style.getPropertyValue('--vt-y')).toBe('20px')
@@ -34,7 +38,7 @@ describe('prepare', () => {
   // cannot give, and getting this wrong leaves the old theme peeking out of a
   // corner when the circle finishes.
   test('the radius reaches the farthest corner from a corner origin', () => {
-    prepare(ctx(0, 0), 'native')
+    prepare(ctx(0, 0), 'vanilla', 'native')
 
     const expected = Math.hypot(window.innerWidth, window.innerHeight)
     const actual = Number.parseFloat(root.style.getPropertyValue('--vt-radius'))
@@ -42,7 +46,11 @@ describe('prepare', () => {
   })
 
   test('the radius halves when the origin is centred', () => {
-    prepare(ctx(window.innerWidth / 2, window.innerHeight / 2), 'native')
+    prepare(
+      ctx(window.innerWidth / 2, window.innerHeight / 2),
+      'vanilla',
+      'native'
+    )
 
     const expected = Math.hypot(window.innerWidth / 2, window.innerHeight / 2)
     const actual = Number.parseFloat(root.style.getPropertyValue('--vt-radius'))
@@ -52,7 +60,7 @@ describe('prepare', () => {
 
 describe('the bridge property', () => {
   test('setProgress lands on the computed style', () => {
-    prepare(ctx(0, 0), 'bridge')
+    prepare(ctx(0, 0), 'motion', 'bridge')
     setProgress(0.5)
 
     expect(readVar('--vt-progress')).toBe('0.5')
@@ -62,7 +70,7 @@ describe('the bridge property', () => {
   // registered <number> computes to a normalised number, an unregistered
   // custom property would hand back the token exactly as written.
   test('--vt-progress is registered as a number, not an opaque token', () => {
-    prepare(ctx(0, 0), 'bridge')
+    prepare(ctx(0, 0), 'motion', 'bridge')
     setProgress(0.5)
     root.style.setProperty('--vt-progress', '0.500')
 
@@ -72,11 +80,12 @@ describe('the bridge property', () => {
 
 describe('cleanup', () => {
   test('leaves nothing behind', () => {
-    prepare(ctx(10, 20), 'bridge')
+    prepare(ctx(10, 20), 'motion', 'bridge')
     setProgress(0.7)
 
     cleanup()
 
+    expect(root.dataset.vtEngine).toBeUndefined()
     expect(root.dataset.vtMode).toBeUndefined()
     for (const prop of [
       '--vt-x',

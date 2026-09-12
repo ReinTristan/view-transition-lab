@@ -21,7 +21,7 @@ export const motionEngine: TransitionEngine = {
       return
     }
 
-    prepare(ctx, 'bridge')
+    prepare(ctx, 'motion', 'bridge')
     const transition = document.startViewTransition(apply)
 
     try {

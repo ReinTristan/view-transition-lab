@@ -1,0 +1,24 @@
+/* The vanilla engine's wipe: hand-written keyframes, and the browser runs them.
+ *
+ * Keyed on data-vt-engine and NOT on data-vt-mode, which is the whole reason
+ * this file exists. The native mode has two tenants — vanilla writes its CSS by
+ * hand, tailwind writes it through utilities — so the mode cannot be what
+ * selects here: a rule keyed on it would also match tailwind, and every one of
+ * tailwind's five sub-engines would have to remember to cancel this animation.
+ * Two mutually exclusive selectors need no specificity contest and no reset.
+ *
+ * See transitions.css for the shared half, and why there is no native.css.
+ */
+
+[data-vt-engine="vanilla"]::view-transition-new(root) {
+  animation: vt-reveal var(--vt-duration) var(--vt-ease) forwards;
+}
+
+@keyframes vt-reveal {
+  from {
+    clip-path: circle(0 at var(--vt-x) var(--vt-y));
+  }
+  to {
+    clip-path: circle(var(--vt-radius) at var(--vt-x) var(--vt-y));
+  }
+}

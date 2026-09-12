@@ -1,4 +1,4 @@
-import type { TransitionContext, TransitionMode } from './types'
+import type { EngineId, TransitionContext, TransitionMode } from './types'
 
 const VT_PROPS = [
   '--vt-x',
@@ -22,12 +22,24 @@ export function prefersReducedMotion(): boolean {
 }
 
 /**
- * Gets the document ready for the wipe: circle origin, radius, duration and
- * mode. The mode is read from transitions.css to decide whether CSS drives the
- * animation or a library does.
+ * Gets the document ready for the wipe: circle origin, radius, duration, engine
+ * and mode. Both attributes are what the stylesheets select on, and they answer
+ * different questions:
+ *
+ *   data-vt-mode   — how the wipe is produced. It is what bridge.css keys on,
+ *                    shared by motion, gsap and anime on purpose: the three run
+ *                    the identical mechanism and only differ in who ticks it.
+ *   data-vt-engine — who is running it. The native mode has two tenants that
+ *                    write different CSS (vanilla by hand, tailwind through
+ *                    utilities), so that mode splits per engine instead.
+ *
+ * The rule, in one line: CSS per mode where the engines share the mechanism,
+ * CSS per engine where they do not. Each module passes its own literals — no
+ * engine ever branches on either axis.
  */
 export function prepare(
   ctx: TransitionContext,
+  engine: EngineId,
   mode: Exclude<TransitionMode, 'overlay'>
 ) {
   const root = document.documentElement
@@ -39,6 +51,7 @@ export function prepare(
     Math.max(y, window.innerHeight - y)
   )
 
+  root.dataset.vtEngine = engine
   root.dataset.vtMode = mode
   root.style.setProperty('--vt-x', `${x}px`)
   root.style.setProperty('--vt-y', `${y}px`)
@@ -54,6 +67,7 @@ export function setProgress(value: number) {
 
 export function cleanup() {
   const root = document.documentElement
+  delete root.dataset.vtEngine
   delete root.dataset.vtMode
   for (const prop of VT_PROPS) {
     root.style.removeProperty(prop)

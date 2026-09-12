@@ -1,12 +1,22 @@
-/* Theme-change wipes.
+/* Theme-change wipes — the shared half.
  *
- * Two modes share the same browser mechanism:
+ * What every wipe needs whoever is running it: the registered progress
+ * property, the geometry the runtime writes, the base state of the root
+ * pseudo-elements, the busy state of the chrome, and the reduced-motion net.
+ * The wipes themselves live next door, one file each:
  *
- *   native  — the animation lives here, in CSS, on the pseudo-element.
- *   bridge  — the animation is driven by a JS library (Motion, GSAP, anime.js)
- *             writing --vt-progress on :root. Pseudo-elements are not DOM
- *             nodes, so none of those libraries can touch them directly; the
- *             bridge is the custom property, which does inherit down to them.
+ *   transitions/vanilla.css   the vanilla engine  — keyed on data-vt-engine
+ *   transitions/bridge.css    the bridge mode     — keyed on data-vt-mode
+ *
+ * The split is not symmetric, and it is not meant to be: CSS goes per mode
+ * where the engines share the mechanism, per engine where they do not. Motion,
+ * GSAP and anime.js share the bridge rule on purpose. The native mode, on the
+ * other hand, has two tenants that write different CSS — vanilla by hand and
+ * tailwind through utilities — so it splits per engine.
+ *
+ * Which is why there is NO native.css: once vt-reveal moved out to vanilla and
+ * tailwind's blocks are its own, that mode has nothing left to share. A file
+ * sitting there empty for the sake of symmetry would say something untrue.
  */
 
 /* Registered so it is interpolable and so calc() treats it as a number rather
@@ -27,7 +37,17 @@
   --vt-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* The old snapshot sits still underneath while the new one uncovers it. */
+/* Base state of the root pseudo-elements. These belong here and not in a mode
+ * file because all three modes sit on them: the old snapshot stays still
+ * underneath while the new one uncovers it, and bridge.css only overrides the
+ * `animation`, inheriting the stacking and the blend mode from right here.
+ *
+ * There is a fourth pseudo-element nobody declares, and it is worth knowing
+ * about before debugging why a transition lasts what it lasts: the browser runs
+ * an animation of its own, -ua-view-transition-group-anim-root, on
+ * ::view-transition-group(root). It is there in every mode, always. It does not
+ * explain the bridge keepalive — it lasts whatever the UA says, not what
+ * --vt-duration asks for — but it is the floor underneath everything else. */
 ::view-transition-old(root) {
   z-index: 0;
   mix-blend-mode: normal;
@@ -38,43 +58,6 @@
   z-index: 1;
   mix-blend-mode: normal;
   animation: none;
-}
-
-/* --- Native mode: the animation is declarative ----------------------------- */
-
-[data-vt-mode="native"]::view-transition-new(root) {
-  animation: vt-reveal var(--vt-duration) var(--vt-ease) forwards;
-}
-
-@keyframes vt-reveal {
-  from {
-    clip-path: circle(0 at var(--vt-x) var(--vt-y));
-  }
-  to {
-    clip-path: circle(var(--vt-radius) at var(--vt-x) var(--vt-y));
-  }
-}
-
-/* --- Bridge mode: the animation is driven by JS ---------------------------- */
-
-[data-vt-mode="bridge"]::view-transition-new(root) {
-  /* The clip-path recomputes itself every time the JS engine writes
-     --vt-progress; there are no keyframes interpolating it. */
-  clip-path: circle(
-    calc(var(--vt-progress) * var(--vt-radius)) at var(--vt-x) var(--vt-y)
-  );
-  /* Keepalive. Without an active animation on the pseudo-element, the browser
-     considers the transition finished as soon as it is ready and the wipe is
-     never seen. This one animates nothing: it just holds the transition open
-     for as long as the JS engine needs. */
-  animation: vt-keepalive var(--vt-duration) linear forwards;
-}
-
-@keyframes vt-keepalive {
-  from,
-  to {
-    opacity: 1;
-  }
 }
 
 /* --- Busy state ------------------------------------------------------------ */
