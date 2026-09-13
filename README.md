@@ -44,9 +44,10 @@ same engine can implement more than one:
 
 | engine | modes | chunk | notes |
 |---|---|---|---|
-| Vanilla | `native` | 0.22 kB | No library at all. The animation is hand-written CSS on the pseudo-element. |
+| Vanilla | `native` | 0.23 kB | No library at all. The animation is hand-written CSS on the pseudo-element. |
+| Tailwind | `native` | 0.23 kB | The same wipe written through Tailwind utilities. 1 of 5 sub-engines ready: **core**, a CSS transition with `@starting-style`. |
 | Anime.js | `bridge` | 30.45 kB | One `requestAnimationFrame` loop shared by every animation on the page. |
-| Motion | `bridge` | 61.44 kB | The reference implementation of the bridge. |
+| Motion | `bridge` | 61.45 kB | The reference implementation of the bridge. |
 | GSAP | `bridge` | 69.95 kB | Its own ticker. Flip lands with the overlay mode. |
 
 Engines are loaded lazily, so the bundle weight the lab measures is real — and that column is
@@ -54,6 +55,10 @@ already a finding rather than trivia. The three bridge engines do the identical 
 scalar from 0 to 1 on the same curve, write it to `--vt-progress`, let the same `clip-path`
 consume it. Driven through the real UI they are indistinguishable, frame for frame. Anime.js
 costs half of Motion and under half of GSAP for that same result.
+
+The two native engines weigh the same for the opposite reason: their chunk is only the call to
+`startViewTransition`. The wipe itself is CSS and lands in the main stylesheet, so that column
+cannot see what a Tailwind sub-engine costs — only the stylesheet can.
 
 The curve is held constant on purpose, each library spelling it its own way — Motion's
 `cubic-bezier(0.22, 1, 0.36, 1)`, GSAP's `power4.out`, Anime's `outQuint`. If two engines looked
@@ -63,7 +68,7 @@ different, something would be broken rather than interesting.
 
 | engine | modes | notes |
 |---|---|---|
-| Tailwind | `native` | Declarative through Tailwind, across five sub-engines; varies between plugins. |
+| Tailwind sub-engines | `native` | `tw-animate-css`, `tailwind-animations`, `tailwindcss-animated` and `tailwindcss-motion`: the same wipe asked of each library through its own utilities. Already listed in the picker as pending. |
 
 GSAP and Anime.js also declare `overlay`. The `mode` selector now exists — it lives in the
 settings popover, next to the engine — but no engine ships an overlay module yet, so the option is
@@ -93,7 +98,7 @@ Vitest in **browser mode** — Playwright provider, Chromium headless. jsdom wou
 nodes, and half of what the suite asserts is computed style out of a real cascade with Tailwind
 compiled for real.
 
-176 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
+190 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
 themes, the orchestrator and the controls. `document.getAnimations()` filtered by
 `effect.pseudoElement` is the only window into the pseudo-elements, and it is how the `bridge`
 keepalive is actually tested rather than assumed.
@@ -101,7 +106,10 @@ keepalive is actually tested rather than assumed.
 The piece worth knowing about is the **engine conformance suite**. It enumerates
 `engineList.filter((engine) => engine.ready)`, so an engine enrols itself the day its loader lands
 — no test to write. Not a hope, either: GSAP and Anime.js were both added that way and each passed
-the whole bridge block on the first run. Only Tailwind is left to walk through it. Every engine has to prove the same five things: it
+the whole bridge block on the first run. Tailwind passed four of the five on its first run too; the
+fifth only fell because the native branch still named vanilla's keyframes, and now asserts what
+the mode promises instead — some CSS on the pseudo-element, and the bridge untouched. Every engine
+has to prove the same five things: it
 skips the API under reduced motion, it still swaps the theme in a browser with no View Transitions
 API, it leaves no `--vt-*` behind, it lasts roughly as long as it was told to, and it animates the
 root pseudo-element in its declared mode.

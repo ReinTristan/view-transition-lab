@@ -33,7 +33,7 @@ Tailwind compiled.
   `tsconfig.test.json` referenced from the solution file. So `pnpm build` typechecks them too —
   a broken test breaks the build. `vitest.config.ts` is referenced from `tsconfig.node.json`.
 - **Adding or removing a test makes `README.md` lie, and it is on you to fix it in the same
-  commit.** Its Testing section opens with a hardcoded count — "176 tests over the store, …" —
+  commit.** Its Testing section opens with a hardcoded count — "N tests over the store, …" —
   and that is the **only** count anywhere in the repo or in `docs/`. Take the new number from the
   `pnpm test:run` summary rather than counting by hand or guessing the delta. Nothing checks
   this, which is exactly why it is written down.
@@ -41,16 +41,22 @@ Tailwind compiled.
   very same pipeline the app gets (the `@` alias, and Tailwind compiling the themes for real).
 - **`optimizeDeps.include` there is load-bearing.** The engines are dynamic imports, so Vite
   discovers them mid-run and *reloads the test file*, which surfaces as a flake with no cause.
-  A new engine means a new line there.
+  A new engine that imports a library means a new line there — `vanilla` and `tailwind` import
+  none, so they have none.
 - Coverage is v8, report only, scoped to `themes/`, `transitions/`, `hooks/` and
   `components/{controls,layout}`. `components/ui/` is excluded on purpose: 61 shadcn files inside
   the include would measure shadcn, not the lab.
 - **The engine conformance suite is the piece to know about.** `test/transitions/engines.test.ts`
-  enumerates `engineList.filter((e) => e.ready)`, so tailwind enrols itself the day its loader
+  enumerates `engineList.filter((e) => e.ready)`, so an engine enrols itself the day its loader
   lands — no test edit. Not a hope, either: `gsap` and `anime` were both added that way and each
-  passed the whole bridge block on the first run. `docs/testing.md` holds the contract.
+  passed the whole bridge block on the first run, and `tailwind` passed four of five. The fifth
+  is why the **native branch asserts the mode, not a name**: some CSS animation or transition on
+  the pseudo-element, and `--vt-progress` untouched. Keyframe names belong to each engine's annex.
+  `docs/testing.md` holds the contract.
 - `document.getAnimations()` filtered by `effect.pseudoElement` is the only window into the
-  view-transition pseudo-elements. That is how the bridge keepalive is actually tested.
+  view-transition pseudo-elements. That is how the bridge keepalive is actually tested, and CSS
+  transitions show up there too (`trace()` records both). **Filter out `-ua-` names** when
+  asking whether an engine animates anything: the browser's own group animation is always there.
 
 ## What this project is
 
@@ -64,8 +70,9 @@ implementations can be compared honestly. Three orthogonal axes:
   the snapshots, a JS library drives the progress), `overlay` (no VT API at all).
 
 Currently implemented: 7 themes (2 partially designed — `pastel` and `neobrutalism`, the
-furthest along but **not** finished — 5 are pendings with a minimum viable palette), and 4
-engines (`vanilla`, `motion`, `gsap`, `anime`). Only `tailwind` is left. The `mode` axis is
+furthest along but **not** finished — 5 are pendings with a minimum viable palette), and all 5
+engines — `tailwind` with 1 of its 5 sub-engines (`core`); the other four are declared as pending
+choices, one plan each. The `mode` axis is
 selectable and persisted, but `overlay` has no module yet, so it shows as pending everywhere.
 
 ## Architecture: the load-bearing decisions
@@ -153,6 +160,14 @@ cannot drift the way `TransitionEngine.modes` once did. A module is one engine i
 engine ever branches on either axis: it passes its own `data-vt-engine` and `data-vt-mode` to
 `prepare()` as literals.
 
+**The third attribute, `data-vt-option`, is not a literal**, and that is the difference worth
+keeping: the sub-engine changes at runtime within one engine, so it travels in
+`TransitionContext.option` and `prepare()` projects it. `runTransition()` fills it from the store
+*after* `loaderFor()`, which may have corrected the engine. It passes through `reconcileOption()`,
+which refuses a `pending` choice for the same reason `reconcileMode()` refuses a mode with no
+loader — a pending sub-engine has no CSS rule, so its attribute would select nothing and the theme
+would snap over with no wipe.
+
 **Two attributes because the stylesheets ask two different questions**, and the answer decides
 which one selects: `data-vt-mode` is *how* the wipe is produced, `data-vt-engine` is *who* runs
 it. The rule is **CSS per mode where the engines share the mechanism, CSS per engine where they
@@ -161,9 +176,11 @@ tenants writing different CSS (vanilla by hand, tailwind through utilities) and 
 engine. Keying native on the mode would make vanilla's rule match tailwind too, and every one of
 tailwind's five sub-engines would have to remember to cancel it.
 
-Engines are **dynamically imported** so the bundle weight the lab measures is real (`vanilla` is
-0.22 kB, `anime` 30.45 kB, `motion` 61.44 kB, `gsap` 69.95 kB — and that spread is a finding, not
-trivia: the three bridge engines are doing the identical job).
+Engines are **dynamically imported** so the bundle weight the lab measures is real (`vanilla` and
+`tailwind` are 0.23 kB, `anime` 30.45 kB, `motion` 61.45 kB, `gsap` 69.95 kB — and that spread is
+a finding, not trivia: the three bridge engines are doing the identical job). The two native
+chunks are twins because they only hold the `startViewTransition` call; a sub-engine's cost is
+CSS and lives in the main stylesheet, where the chunk column cannot see it.
 `runTransition()` also holds an anti-overlap lock — a second theme change while a transition is
 live would make the browser abort the first one and flicker. `loaderFor()` never degrades
 quietly: an engine with no loader, or a mode the engine cannot run, warns and **corrects the
@@ -171,7 +188,9 @@ selection** so the picker stops announcing something else.
 
 An engine may own an extra axis, declared as `EngineMeta.options` — tailwind's five sub-engines
 today. It is a descriptor and not a component with `if (engine === 'tailwind')`, so the settings
-bar walks it without knowing which engine it is.
+bar walks it without knowing which engine it is. A choice's `status` is hand-written — a sub-engine
+is CSS, not a module, so there is no loader to derive it from — and `registry.test.ts` holds the
+nearest thing: every `ready` choice has its `styles/transitions/<engine>/<choice>.css`.
 
 Note the import direction: `transitions/registry.ts` and `transitions/types.ts` are leaves (no
 imports of their own beyond each other), `themes/use-theme-store.ts` imports both, and
@@ -229,12 +248,15 @@ not disabled — the browser is simply not routing anything to them for those fe
 ### CSS layering
 
 `src/index.css` is the import root — fonts, the `dark` variant, `@theme inline`, then
-`styles/transitions.css`, every `styles/transitions/*.css` and every `styles/themes/*.css`.
+`styles/transitions.css`, every file under `styles/transitions/` and every `styles/themes/*.css`.
 **Adding a file under either of those two directories means adding its `@import` there too.**
 
 `styles/transitions.css` is the shared half — the `@property`, the `--vt-*` geometry, the base
 state of the root pseudo-elements, the busy state and the reduced-motion net — and each wipe sits
-in its own file beside it (`transitions/vanilla.css`, `transitions/bridge.css`). There is
+in its own file beside it (`transitions/vanilla.css`, `transitions/bridge.css`, and one
+`transitions/tailwind/<choice>.css` per sub-engine, keyed on the engine *and* the option). The
+Tailwind ones reach the pseudo-element through `@apply`, which is the only way utilities can:
+it carries no classes. There is
 deliberately **no `native.css`**: that mode has nothing left to share once `vt-reveal` belongs to
 vanilla, and an empty file kept for symmetry would say something untrue.
 
