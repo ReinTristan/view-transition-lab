@@ -45,7 +45,7 @@ same engine can implement more than one:
 | engine | modes | chunk | notes |
 |---|---|---|---|
 | Vanilla | `native` | 0.23 kB | No library at all. The animation is hand-written CSS on the pseudo-element. |
-| Tailwind | `native` | 0.23 kB | The same wipe written through Tailwind utilities. 1 of 5 sub-engines ready: **core**, a CSS transition with `@starting-style`. |
+| Tailwind | `native` | 0.23 kB | The wipe written through Tailwind utilities, five ways: **core**, a CSS transition with `@starting-style`, and four libraries — **tw-animate-css**, **tailwind-animations**, **tailwindcss-animated** and **tailwindcss-motion**. None of the four has a `clip-path`, so core is the only one that draws the circle; each of the others asks for the closest thing its own vocabulary has. |
 | Anime.js | `bridge` | 30.45 kB | One `requestAnimationFrame` loop shared by every animation on the page. |
 | Motion | `bridge` | 61.45 kB | The reference implementation of the bridge. |
 | GSAP | `bridge` | 69.95 kB | Its own ticker. Flip lands with the overlay mode. |
@@ -66,11 +66,7 @@ different, something would be broken rather than interesting.
 
 ***Upcoming***
 
-| engine | modes | notes |
-|---|---|---|
-| Tailwind sub-engines | `native` | `tw-animate-css`, `tailwind-animations`, `tailwindcss-animated` and `tailwindcss-motion`: the same wipe asked of each library through its own utilities. Already listed in the picker as pending. |
-
-GSAP and Anime.js also declare `overlay`. The `mode` selector now exists — it lives in the
+The `overlay` mode. Motion, GSAP and Anime.js all declare it. The `mode` selector now exists — it lives in the
 settings popover, next to the engine — but no engine ships an overlay module yet, so the option is
 listed there as pending rather than hidden.
 
@@ -98,7 +94,7 @@ Vitest in **browser mode** — Playwright provider, Chromium headless. jsdom wou
 nodes, and half of what the suite asserts is computed style out of a real cascade with Tailwind
 compiled for real.
 
-190 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
+200 tests over the store, the theme registry, the DOM contract, the surface contract of all seven
 themes, the orchestrator and the controls. `document.getAnimations()` filtered by
 `effect.pseudoElement` is the only window into the pseudo-elements, and it is how the `bridge`
 keepalive is actually tested rather than assumed.

@@ -71,9 +71,12 @@ implementations can be compared honestly. Three orthogonal axes:
 
 Currently implemented: 7 themes (2 partially designed — `pastel` and `neobrutalism`, the
 furthest along but **not** finished — 5 are pendings with a minimum viable palette), and all 5
-engines — `tailwind` with 1 of its 5 sub-engines (`core`); the other four are declared as pending
-choices, one plan each. The `mode` axis is
-selectable and persisted, but `overlay` has no module yet, so it shows as pending everywhere.
+engines — `tailwind` with all 5 of its sub-engines (`core`, `tw-animate-css`,
+`tailwind-animations`, `tailwindcss-animated`, `tailwindcss-motion`), so no choice in
+`EngineMeta.options` is pending any more. Only `core` draws the circle: none of the four libraries
+has a `clip-path`, so each asks for the closest thing its own vocabulary has — a finding, not a gap
+to patch with hand-written keyframes.
+The `mode` axis is selectable and persisted, but `overlay` has no module yet, so it shows as pending everywhere.
 
 ## Architecture: the load-bearing decisions
 

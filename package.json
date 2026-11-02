@@ -1,7 +1,7 @@
 {
   "name": "view-transition-lab",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "View Transitions API comparison with different engines, modes and themes!",
   "author": "ReinTristan",
   "license": "MIT",
