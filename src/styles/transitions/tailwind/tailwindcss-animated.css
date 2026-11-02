@@ -1,0 +1,21 @@
+/* tailwindcss-animated: composition by modifiers — of the timing, not the shape.
+ *
+ * No clip-path in the package either, so this is not the circle. The shared
+ * reasoning — why the circle is not transcribed, why only the enter half, why
+ * no keepalive — is in tw-animate-css.css and holds here unchanged.
+ *
+ * Its modifiers compose duration, delay, easing, direction and the rest, but
+ * not what moves: one animate-* rules the `animation` shorthand, so two of its
+ * animations cannot be stacked. And none of the predefined ones fades and
+ * zooms at once — jump-in scales 0 to 1.2 and back with no opacity at all. So
+ * the closest honest pick is a plain fade, and that is the finding. Nothing
+ * scales, hence no transform-origin.
+ *
+ * See transitions.css for the shared half.
+ */
+
+[data-vt-engine="tailwind"][data-vt-option="tailwindcss-animated"]::view-transition-new(
+  root
+) {
+  @apply animate-fade animate-duration-(--vt-duration) animate-ease-(--vt-ease);
+}

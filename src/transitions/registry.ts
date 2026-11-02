@@ -118,26 +118,28 @@ const tailwindVariants: EngineOption = {
     {
       id: 'tw-animate-css',
       label: 'tw-animate-css',
-      blurb: 'enter/exit pairs, built for Radix and Base UI data-state.',
-      status: 'pending',
+      blurb:
+        'enter/exit pairs: fades and zooms in. No clip-path, so no circle.',
+      status: 'ready',
     },
     {
       id: 'tailwind-animations',
       label: 'tailwind-animations',
-      blurb: 'Named animations, v4 native, written with @utility.',
-      status: 'pending',
+      blurb: 'Named animations: zoom-in, fixed at 50%. No clip-path.',
+      status: 'ready',
     },
     {
       id: 'tailwindcss-animated',
       label: 'tailwindcss-animated',
-      blurb: 'Composition by modifiers: duration, delay, easing, direction.',
-      status: 'pending',
+      blurb:
+        'Modifiers compose the timing, not the shape: a fade. No clip-path.',
+      status: 'ready',
     },
     {
       id: 'tailwindcss-motion',
       label: 'tailwindcss-motion',
-      blurb: 'Composition by motion axes, each with its own timing.',
-      status: 'pending',
+      blurb: 'One animation per axis: opacity and scale. No clip-path.',
+      status: 'ready',
     },
   ],
 }

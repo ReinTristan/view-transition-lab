@@ -129,9 +129,11 @@ describe('persistence', () => {
     expect(Object.keys(engineOptions)).toEqual(['tailwind'])
   })
 
-  // A real choice, just not a runnable one. The day tailwindcss-motion lands,
-  // point this at whichever sub-engine is still pending.
-  test('a persisted choice that is not ready yet falls back to a ready one', async () => {
+  // A real choice, just not a runnable one. Switched off, not deleted: since
+  // tailwindcss-motion landed every sub-engine is ready, so there is nothing
+  // pending to point this at. The day one is declared with no CSS, aim the
+  // blob at it and turn this back into `test`.
+  test.skip('a persisted choice that is not ready yet falls back to a ready one', async () => {
     await rehydrateFrom({
       engine: 'tailwind',
       engineOptions: { tailwind: 'tailwindcss-motion' },

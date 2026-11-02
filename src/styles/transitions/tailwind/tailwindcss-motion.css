@@ -1,0 +1,25 @@
+/* tailwindcss-motion: composition by motion axes, one animation per axis.
+ *
+ * No clip-path in the package either, so this is not the circle. The shared
+ * reasoning — why the circle is not transcribed, why only the enter half, why
+ * no keepalive — is in tw-animate-css.css and holds here unchanged.
+ *
+ * The one library that rebuilds tw-animate-css's fade and zoom exactly, and
+ * that is what makes it the cleanest comparison of the lot: the same result on
+ * screen, a different mechanism underneath. tw-animate-css runs one keyframe
+ * fed by variables; this runs two animations, motion-opacity-in and
+ * motion-scale-in, each on its own timeline.
+ *
+ * Both axes get the same duration so the comparison stays fair. Giving each its
+ * own (motion-duration-…/opacity) is exactly what the library is for, and it
+ * is left unused on purpose.
+ *
+ * See transitions.css for the shared half.
+ */
+
+[data-vt-engine="tailwind"][data-vt-option="tailwindcss-motion"]::view-transition-new(
+  root
+) {
+  transform-origin: var(--vt-x) var(--vt-y);
+  @apply motion-opacity-in-0 motion-scale-in-95 motion-duration-(--vt-duration) motion-ease-(--vt-ease);
+}

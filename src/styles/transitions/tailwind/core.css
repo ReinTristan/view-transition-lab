@@ -11,7 +11,10 @@
  * hand would be comparing a transcription of them.
  *
  * The mechanism comes from utilities; the geometry stays plain CSS. The two
- * circle()s are the wipe itself, the same one every engine in the lab draws.
+ * circle()s are the wipe itself, the same one vanilla and the bridge engines
+ * draw. Within tailwind, core is the only sub-engine that draws it: none of the
+ * four libraries has a clip-path, so each asks for the closest thing its own
+ * vocabulary has instead. tw-animate-css.css holds the reasoning.
  *
  * No `animation: none` and no keepalive. The reset in transitions.css already
  * clears the animation, vanilla's rule is keyed on its own engine so vt-reveal

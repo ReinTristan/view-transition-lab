@@ -23,6 +23,10 @@
 @import "./styles/transitions.css";
 @import "./styles/transitions/vanilla.css";
 @import "./styles/transitions/tailwind/core.css";
+@import "./styles/transitions/tailwind/tw-animate-css.css";
+@import "./styles/transitions/tailwind/tailwind-animations.css";
+@import "./styles/transitions/tailwind/tailwindcss-animated.css";
+@import "./styles/transitions/tailwind/tailwindcss-motion.css";
 @import "./styles/transitions/bridge.css";
 @import "./styles/themes/pastel.css";
 @import "./styles/themes/anthropic.css";

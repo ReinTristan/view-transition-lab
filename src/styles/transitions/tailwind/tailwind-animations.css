@@ -1,0 +1,21 @@
+/* tailwind-animations: named animations, v4 native, and nothing to tune.
+ *
+ * No clip-path in the package either, so this is not the circle. The shared
+ * reasoning — why the circle is not transcribed, why only the enter half, why
+ * no keepalive — is in tw-animate-css.css and holds here unchanged.
+ *
+ * zoom-in is the closest it gets to tw-animate-css's fade and zoom, and it is
+ * a finding that it is not the same one: the keyframe has scale(.5) written
+ * into it and no utility reaches it. Minimal means the animation is taken as it
+ * comes. Only the timing is ours, through its animate-duration-* and
+ * animate-bezier-* modifiers.
+ *
+ * See transitions.css for the shared half.
+ */
+
+[data-vt-engine="tailwind"][data-vt-option="tailwind-animations"]::view-transition-new(
+  root
+) {
+  transform-origin: var(--vt-x) var(--vt-y);
+  @apply animate-zoom-in animate-duration-(--vt-duration) animate-bezier-(--vt-ease);
+}

@@ -1,0 +1,34 @@
+/* tw-animate-css: enter/exit pairs, asked for through the library's utilities.
+ *
+ * The second of tailwind's five sub-engines, and the first engine in the lab
+ * that does NOT draw the circle. That is a finding, not a shortcut: the
+ * library's `enter` and `exit` keyframes only animate opacity, transform and
+ * filter, driven by its --tw-enter-* properties. There is no clip-path anywhere
+ * in the package, so there is nothing to ask it for a circle() with.
+ *
+ * Transcribing the circle into a keyframe of our own would make the wipe match
+ * the other engines, and would also stop measuring the library: the circle
+ * would be ours, with tw-animate-css only lending the timing. So this is the
+ * closest its own vocabulary gets — the new snapshot fades in and grows
+ * slightly from the click point, over an old snapshot that stays still.
+ *
+ * Only the enter half of the pair, on purpose. The two snapshots blend with
+ * mix-blend-mode: normal (transitions.css), so fading the old one out while the
+ * new one fades in would dip through the background halfway. Left alone, the
+ * old one keeps the `animation: none` the shared reset gives it.
+ *
+ * animate-in reads --tw-duration and --tw-ease, which are exactly what core's
+ * duration-* and ease-* write, so the timing composes the way it does in
+ * core.css. `enter` only has a `from`, so the end state is the computed value
+ * and no fill-mode is needed. No keepalive either: a running CSS animation
+ * holds the view transition open by itself.
+ *
+ * See transitions.css for the shared half.
+ */
+
+[data-vt-engine="tailwind"][data-vt-option="tw-animate-css"]::view-transition-new(
+  root
+) {
+  transform-origin: var(--vt-x) var(--vt-y);
+  @apply animate-in fade-in zoom-in-95 duration-(--vt-duration) ease-(--vt-ease);
+}
