@@ -27,3 +27,8 @@ dist-ssr
 coverage
 .vitest-attachments
 **/__screenshots__
+.vitest/*
+
+# env
+.env
+.env.*

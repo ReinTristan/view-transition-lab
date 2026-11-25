@@ -1,6 +1,13 @@
 import { playwright } from '@vitest/browser-playwright'
+import { loadEnv } from 'vite'
 import { defineConfig, mergeConfig } from 'vitest/config'
 import viteConfig from './vite.config.ts'
+
+// Vite reads .env only after the config is resolved, and only into
+// import.meta.env, so the config itself has to load it by hand. The prefix
+// keeps it to VITEST_* — nothing else in .env is the config's business. A
+// variable already set in the shell wins over the file.
+const env = loadEnv('test', process.cwd(), 'VITEST_')
 
 /**
  * Kept apart from vite.config.ts and merged in, so the app config stays
@@ -47,7 +54,15 @@ export default mergeConfig(
       browser: {
         enabled: true,
         headless: true,
-        provider: playwright(),
+        // VITEST_BROWSER_PATH points the run at a local Chromium-based browser
+        // (Brave, say) instead of the build Playwright bundles, which tracks
+        // Chromium's pre-release channel rather than stable. Unset, it falls
+        // back to the bundled one, so a fresh clone needs nothing extra.
+        provider: playwright({
+          launchOptions: {
+            executablePath: env.VITEST_BROWSER_PATH,
+          },
+        }),
         instances: [{ browser: 'chromium' }],
       },
       coverage: {
